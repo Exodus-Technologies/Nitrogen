@@ -20,7 +20,11 @@ const config = {
       dbPass: process.env.DB_PASS,
       broadcastCollectionName: process.env.BROADCAST_COLLECTION_NAME,
       sessionCollectionName: process.env.SESSION_COLLECTION_NAME,
-      videoCollectionName: process.env.VIDEO_COLLECTION_NAME
+      videoCollectionName: process.env.VIDEO_COLLECTION_NAME,
+      options: {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      }
     },
     vonage: {
       apiKey: process.env.API_KEY,
