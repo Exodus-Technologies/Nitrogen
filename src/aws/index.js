@@ -46,7 +46,7 @@ export const doesS3BucketExist = async () => {
   }
 };
 
-export const getFileContent = async (archivePath, url) => {
+const getFileContent = async (archivePath, url) => {
   const file = fs.createWriteStream(archivePath);
   https.get(url, function (response) {
     response.pipe(file);

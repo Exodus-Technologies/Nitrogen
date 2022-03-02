@@ -6,19 +6,19 @@ exports.startBroadcast = async (req, res, next) => {
   try {
     const { archiveOptions } = req.body;
     const response = await BroadcastService.startBroadcast(archiveOptions);
-    res.send(response);
+    res.json(response);
   } catch (err) {
     console.log(`Error with starting broadcast: `, err);
     next(err);
   }
 };
 
-exports.stopBroadcast = async (req, res, next) => {
+exports.stopBroadcast = async (_, res, next) => {
   try {
     const response = await BroadcastService.stopBroadcast();
-    res.send(response);
+    res.json(response);
   } catch (err) {
-    console.log(`Error with starting broadcast: `, err);
+    console.log(`Error with stopping broadcast: `, err);
     next(err);
   }
 };

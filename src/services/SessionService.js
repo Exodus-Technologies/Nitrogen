@@ -1,18 +1,16 @@
 'use strict';
 
-import models from '../models';
-import { createSession, generateToken } from '../vonage';
-import { badImplementationRequest, badRequest } from '../codes';
 import config from '../config';
+import { createSession, generateToken } from '../vonage';
+import { saveSessionToDb } from '../mongodb';
+import { badImplementationRequest, badRequest } from '../codes';
 
 const { apiKey } = config.sources.vonage;
-const { Session } = models;
 
 exports.createSession = async () => {
   try {
     const { sessionId } = await createSession();
-    const session = new Session({ apiKey, sessionId });
-    await session.save();
+    const session = await saveSessionToDb({ apiKey, sessionId });
     if (session) {
       const token = generateToken(sessionId);
       return {
