@@ -9,7 +9,7 @@ import cors from 'cors';
 import responseTime from 'response-time';
 
 import { requestResponse, errorHandler } from './utils';
-import { appRouter } from './routes';
+import { appRouter, sessionRouter } from './routes';
 import swagger from './swagger';
 
 // Create the Express application object
@@ -55,6 +55,10 @@ console.log('Loaded request/response middleware.');
 //App middleware
 server.use(appRouter);
 console.log('Loaded server routes middleware.');
+
+//Session middleware
+server.use(sessionRouter);
+console.log('Loaded session routes middleware.');
 
 //Swagger middleware
 server.use(swagger);

@@ -35,6 +35,7 @@
     "helmet": "^5.0.2",
     "mongoose": "^6.2.1",
     "nocache": "^3.0.1",
+    "opentok": "^2.13.0",
     "regenerator-runtime": "^0.13.9",
     "response-time": "^2.3.2",
     "swagger-jsdoc": "^6.1.0",
