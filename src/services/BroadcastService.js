@@ -38,7 +38,9 @@ exports.startBroadcast = async archiveOptions => {
     }
   } catch (err) {
     console.log(`Error starting broadcast: `, err);
-    return badImplementationRequest('Error starting broadcast.');
+    return badImplementationRequest(
+      'No clients are actively connected to the OpenTok session provided.'
+    );
   }
 };
 
