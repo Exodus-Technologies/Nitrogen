@@ -18,3 +18,38 @@ export const createSession = () => {
 export const generateToken = sessionId => {
   return opentok.generateToken(sessionId);
 };
+
+export const startBroadcast = (
+  sessionId,
+  broadcastOptions = {
+    outputs: {
+      hls: {}
+    },
+    maxDuration: 5400,
+    resolution: '640x480'
+  }
+) => {
+  return new Promise((resolve, reject) => {
+    opentok.startBroadcast(
+      sessionId,
+      broadcastOptions,
+      function (error, broadcast) {
+        if (error) {
+          reject(error);
+        }
+        resolve(broadcast);
+      }
+    );
+  });
+};
+
+export const startArchive = (sessionId, archiveOptions) => {
+  return new Promise((resolve, reject) => {
+    opentok.startArchive(sessionId, archiveOptions, function (error, archive) {
+      if (error) {
+        reject(error);
+      }
+      resolve(archive);
+    });
+  });
+};

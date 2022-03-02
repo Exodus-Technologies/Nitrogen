@@ -12,9 +12,9 @@ exports.createSession = async () => {
   try {
     const { sessionId } = await createSession();
     const session = new Session({ apiKey, sessionId });
-    const token = generateToken(sessionId);
     await session.save();
     if (session) {
+      const token = generateToken(sessionId);
       return {
         statusCode: 201,
         message: 'Session created with success',

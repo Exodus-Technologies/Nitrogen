@@ -26,6 +26,7 @@
     "@babel/core": "^7.17.2",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.0",
+    "aws-sdk": "^2.1084.0",
     "bcrypt": "^5.0.1",
     "compression": "^1.7.4",
     "core-js": "^3.21.0",

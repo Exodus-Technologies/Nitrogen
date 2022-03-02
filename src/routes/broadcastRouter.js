@@ -2,29 +2,19 @@
 
 import express from 'express';
 import { BroadcastController } from '../controllers';
-// import {} from '../validations';
+import { startBroadcastValidation } from '../validations';
 import { validationHandler } from '../utils';
 
 const { Router } = express;
 const router = Router();
 
 router.post(
-  '/video-service/createBroadcast',
-  BroadcastController.createBroadcast
+  '/video-service/startBroadcast',
+  startBroadcastValidation,
+  validationHandler,
+  BroadcastController.startBroadcast
 );
 
-// router.post(
-//   '/auth-service/changePassword',
-//   loginValidation,
-//   validationHandler,
-//   AuthController.changePassword
-// );
-
-// router.post(
-//   '/auth-service/signup',
-//   userCreationValidation,
-//   validationHandler,
-//   UserController.createUser
-// );
+router.post('/video-service/stopBroadcast', BroadcastController.stopBroadcast);
 
 export default router;
