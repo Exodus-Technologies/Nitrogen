@@ -1,3 +1,6 @@
 'use strict';
 
-export {};
+import BroadcastController from './BroadcastController';
+import SessionController from './SessionController';
+
+export { BroadcastController, SessionController };
