@@ -1,0 +1,49 @@
+{
+  "name": "nitrogen",
+  "version": "1.0.0",
+  "description": "Microservice for all interactions for Vonage integration which includes: startSession, startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "refresh": "rm -rf node_modules/ && npm i && npm dedupe",
+    "prepare": "husky install",
+    "format": "prettier --write .",
+    "serve:dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Exodus-Technologies/Nitrogen.git"
+  },
+  "keywords": [],
+  "author": "Exodus Technologies, LLC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Exodus-Technologies/Nitrogen/issues"
+  },
+  "homepage": "https://github.com/Exodus-Technologies/Nitrogen#readme",
+  "dependencies": {
+    "@babel/core": "^7.17.2",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/register": "^7.17.0",
+    "bcrypt": "^5.0.1",
+    "compression": "^1.7.4",
+    "core-js": "^3.21.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "express-validator": "^6.14.0",
+    "helmet": "^5.0.2",
+    "mongoose": "^6.2.1",
+    "nocache": "^3.0.1",
+    "regenerator-runtime": "^0.13.9",
+    "response-time": "^2.3.2",
+    "swagger-jsdoc": "^6.1.0",
+    "swagger-ui-express": "^4.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "husky": "^7.0.4",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.1"
+  }
+}
