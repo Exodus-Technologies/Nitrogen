@@ -16,31 +16,26 @@ const broadcastSchema = new Schema(
     archiveOptions: {
       sessionId: { type: String, required: true },
       hasAudio: {
-        type: Boolean,
-        required: true
+        type: Boolean
       },
       hasVideo: {
-        type: Boolean,
-        required: true
+        type: Boolean
       },
       layout: {
         type: {
-          type: String,
-          required: true
+          type: String
         },
         stylesheet: {
-          type: String,
-          required: true
+          type: String
         },
         screenshareType: {
-          type: String,
-          required: true
+          type: String
         }
       },
       name: { type: String, required: true },
-      outputMode: { type: String, required: true },
-      resolution: { type: String, required: true },
-      streamMode: { type: String, required: true }
+      outputMode: { type: String },
+      resolution: { type: String },
+      streamMode: { type: String }
     },
     isActive: {
       type: Boolean,

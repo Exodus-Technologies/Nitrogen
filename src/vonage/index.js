@@ -53,3 +53,25 @@ export const startArchive = (sessionId, archiveOptions) => {
     });
   });
 };
+
+export const stopBroadcast = broadcastId => {
+  return new Promise((resolve, reject) => {
+    opentok.stopBroadcast(broadcastId, function (error, broadcast) {
+      if (error) {
+        reject(error);
+      }
+      resolve(broadcast);
+    });
+  });
+};
+
+export const getArchiveById = async archiveId => {
+  return new Promise((resolve, reject) => {
+    opentok.getArchiveById(archiveId, function (err, archive) {
+      if (err) {
+        reject(err);
+      }
+      resolve(archive);
+    });
+  });
+};

@@ -39,7 +39,7 @@ router.use(
 
 router.get('/auth-service/swagger/swagger.json', (_, res) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send(openApiSpecification);
+  res.json(openApiSpecification);
 });
 
 export default router;

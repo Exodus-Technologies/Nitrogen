@@ -1,65 +1,87 @@
 'use strict';
 
-import AWS from 'aws-sdk';
+import fs from 'fs';
+import {
+  S3Client,
+  CreateBucketCommand,
+  HeadBucketCommand
+} from '@aws-sdk/client-s3';
 import config from '../config';
 
 const { aws } = config.sources;
 const { accessKeyId, secretAccessKey, s3BucketName, region } = aws;
 
-const s3 = new AWS.S3({
+const s3Client = new S3Client({
   accessKeyId,
-  secretAccessKey
+  secretAccessKey,
+  region
 });
 
 export const createS3Bucket = () => {
-  return new Promise((resolve, reject) => {
-    const params = {
-      Bucket: s3BucketName,
-      CreateBucketConfiguration: {
-        // Set your region here
-        LocationConstraint: region
-      }
-    };
-
-    s3.createBucket(params, function (err) {
-      if (err) {
-        console.log(err, err.stack);
-        reject(err);
-      }
-      resolve();
-    });
-  });
-};
-
-export const doesS3BucketExist = async () => {
-  const options = {
-    Bucket: s3BucketName
-  };
-  try {
-    await s3.headBucket(options).promise();
-    return true;
-  } catch (error) {
-    if (error.statusCode === 404) {
-      return false;
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName
+      };
+      const data = await s3Client.send(new CreateBucketCommand(params));
+      resolve(data);
+    } catch (err) {
+      console.log(`Error creating bucket: ${s3BucketName} `, err);
+      reject(err);
     }
-    throw error;
-  }
-};
-
-export const getFileContent = async (archivePath, url) => {
-  const file = fs.createWriteStream(archivePath);
-  https.get(url, function (response) {
-    response.pipe(file);
   });
 };
 
-export const uploadArchiveToS3Location = async file => {
-  return new Promise((resolve, reject) => {
-    const { name, url } = file;
-    // Read content from the file
-    const tmpArchivePath = `./tmp/${name}.zip`;
-    const fileContent = await getFileContent(tmpArchivePath, url);
+export const doesS3BucketExist = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName
+      };
+      const data = await s3Client.send(new HeadBucketCommand(params));
+      resolve(data);
+    } catch (err) {
+      console.log(`Error checking status of bucket: ${s3BucketName} `, err);
+      if (error.statusCode === 404) {
+        reject(error);
+      }
+      reject(err);
+    }
+  });
+};
 
+const getFileContentFromUrl = (archivePath, url) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const file = fs.createWriteStream(archivePath);
+      https.get(url, function (response) {
+        response.pipe(file);
+        resolve();
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+const getFileContent = (path, name) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const fullPath = `${path}/${name}`;
+      fs.readFile(fullPath, function (err, data) {
+        if (err) {
+          reject(err);
+        }
+        resolve(data);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+const uploadToS3 = (fileContent, name) => {
+  return new Promise(async (resolve, reject) => {
     // Setting up S3 upload parameters
     const params = {
       Bucket: s3BucketName,
@@ -67,19 +89,41 @@ export const uploadArchiveToS3Location = async file => {
       Body: fileContent,
       ACL: 'public-read'
     };
-
-    // Uploading files to the bucket
-    s3.upload(params, function (err, data) {
-      if (err) {
-        reject(err);
-      }
-      try {
-        fs.unlinkSync(tmpArchivePath);
-        //file removed
+    try {
+      s3.upload(params, function (err, data) {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
         resolve(data.Location);
-      } catch (err) {
-        reject(err);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+export const uploadArchiveToS3Location = async file => {
+  return new Promise(async (resolve, reject) => {
+    const { name, url, filepath } = file;
+    // Read content from the file
+    const tmpArchivePath = `./tmp/${name}.mp4`;
+    let fileContent = '';
+    if (filepath) {
+      fileContent = await getFileContent(filepath, name);
+    }
+    if (url) {
+      fileContent = await getFileContentFromUrl(tmpArchivePath, url);
+    }
+
+    try {
+      const location = await uploadToS3(fileContent, name);
+      if (url) {
+        fs.unlinkSync(tmpArchivePath);
       }
-    });
+      resolve(location);
+    } catch (error) {
+      reject(err);
+    }
   });
 };
