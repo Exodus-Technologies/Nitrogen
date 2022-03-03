@@ -1,8 +1,14 @@
 'use strict';
 
+import config from '../config';
 import models from '../models';
 
+const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 const { Session, Broadcast, Video } = models;
+
+const generateDBUri = () => {
+  return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+};
 
 export const getActiveSession = async () => {
   try {
@@ -29,6 +35,7 @@ export const getActiveBroadcast = async () => {
 export const saveSessionToDb = async payload => {
   try {
     const session = new Session(payload);
+    console.log(session);
     await session.save();
     if (session) {
       return session;
@@ -77,3 +84,5 @@ export const updateBroadcastInDB = async broadcastId => {
 
   await Broadcast.findOneAndUpdate(filter, update, options);
 };
+
+export { generateDBUri };

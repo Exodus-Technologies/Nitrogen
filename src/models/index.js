@@ -6,9 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
-import { generateDBUri } from '../utils';
-
-const uri = generateDBUri();
+import { generateDBUri } from '../mongodb';
 
 const basename = path.basename(__filename);
 
@@ -22,6 +20,7 @@ mongoose.connection.on('error', error => {
 });
 
 mongoose.connection.on('open', () => {
+  const uri = generateDBUri();
   console.log(`Connected to ${uri}`);
 });
 

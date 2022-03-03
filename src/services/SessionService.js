@@ -3,7 +3,7 @@
 import config from '../config';
 import { createSession, generateToken } from '../vonage';
 import { saveSessionToDb } from '../mongodb';
-import { badImplementationRequest, badRequest } from '../codes';
+import { badImplementationRequest, badRequest } from '../response-codes';
 
 const { apiKey } = config.sources.vonage;
 

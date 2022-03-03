@@ -32,12 +32,12 @@ const options = {
 const openApiSpecification = swaggerJsdoc(options);
 
 router.use(
-  '/auth-service/swagger/docs',
+  '/video-service/swagger/docs',
   swaggerUi.serve,
   swaggerUi.setup(openApiSpecification, { explorer: true })
 );
 
-router.get('/auth-service/swagger/swagger.json', (_, res) => {
+router.get('/video-service/swagger/swagger.json', (_, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.json(openApiSpecification);
 });
