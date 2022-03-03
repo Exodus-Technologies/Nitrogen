@@ -7,7 +7,7 @@ import {
   createS3Bucket
 } from '../aws';
 import { saveVideoToDB } from '../mongodb';
-import { badImplementationRequest, badRequest } from '../codes';
+import { badImplementationRequest, badRequest } from '../response-codes';
 
 exports.getFileFromRequest = async req => {
   const form = formidable({ multiples: true });

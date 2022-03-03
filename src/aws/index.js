@@ -4,12 +4,17 @@ import fs from 'fs';
 import {
   S3Client,
   CreateBucketCommand,
-  HeadBucketCommand
+  HeadBucketCommand,
+  PutObjectCommand,
+  ListObjectsCommand
 } from '@aws-sdk/client-s3';
+const { AbortController } = require('@aws-sdk/abort-controller');
 import config from '../config';
 
 const { aws } = config.sources;
 const { accessKeyId, secretAccessKey, s3BucketName, region } = aws;
+
+const abortController = new AbortController();
 
 const s3Client = new S3Client({
   accessKeyId,
@@ -23,10 +28,13 @@ export const createS3Bucket = () => {
       const params = {
         Bucket: s3BucketName
       };
-      const data = await s3Client.send(new CreateBucketCommand(params));
+      const data = await s3Client.send(new CreateBucketCommand(params), {
+        abortSignal: abortController.signal
+      });
       resolve(data);
     } catch (err) {
       console.log(`Error creating bucket: ${s3BucketName} `, err);
+      abortController.abort();
       reject(err);
     }
   });
@@ -38,12 +46,15 @@ export const doesS3BucketExist = () => {
       const params = {
         Bucket: s3BucketName
       };
-      const data = await s3Client.send(new HeadBucketCommand(params));
+      const data = await s3Client.send(new HeadBucketCommand(params), {
+        abortSignal: abortController.signal
+      });
       resolve(data);
     } catch (err) {
+      abortController.abort();
       console.log(`Error checking status of bucket: ${s3BucketName} `, err);
-      if (error.statusCode === 404) {
-        reject(error);
+      if (err.statusCode > 400) {
+        reject(err);
       }
       reject(err);
     }
@@ -59,22 +70,23 @@ const getFileContentFromUrl = (archivePath, url) => {
         resolve();
       });
     } catch (err) {
+      console.log(`Error getting file from url: ${url} `, err);
       reject(err);
     }
   });
 };
 
-const getFileContent = (path, name) => {
+const getFileContent = path => {
   return new Promise(async (resolve, reject) => {
     try {
-      const fullPath = `${path}/${name}`;
-      fs.readFile(fullPath, function (err, data) {
+      fs.readFile(path, function (err, data) {
         if (err) {
           reject(err);
         }
         resolve(data);
       });
     } catch (err) {
+      console.log(`Error getting file: ${path} `, err);
       reject(err);
     }
   });
@@ -90,14 +102,10 @@ const uploadToS3 = (fileContent, name) => {
       ACL: 'public-read'
     };
     try {
-      s3.upload(params, function (err, data) {
-        if (err) {
-          console.log(err);
-          reject(err);
-        }
-        resolve(data.Location);
-      });
+      const data = await s3Client.send(new PutObjectCommand(params));
+      resolve(data);
     } catch (err) {
+      console.log(`Error uploading file to s3 bucket: ${s3BucketName} `, err);
       reject(err);
     }
   });
@@ -122,7 +130,8 @@ export const uploadArchiveToS3Location = async file => {
         fs.unlinkSync(tmpArchivePath);
       }
       resolve(location);
-    } catch (error) {
+    } catch (err) {
+      console.log(`Error uploading archive to s3 bucket: ${file} `, err);
       reject(err);
     }
   });

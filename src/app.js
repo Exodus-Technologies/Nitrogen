@@ -8,7 +8,7 @@ import { generateDBUri } from './utils';
 /**
  * Start web server
  */
-const initServer = async () => {
+const startServer = async () => {
   const { PORT, HOST } = config;
   try {
     await server.listen(PORT, HOST);
@@ -22,7 +22,7 @@ const initServer = async () => {
 /**
  * Connect to mongodb database
  */
-const initDB = async () => {
+const connectDB = async () => {
   const { options } = config.sources.database;
   const { source } = models;
   const uri = generateDBUri();
@@ -36,8 +36,8 @@ const initDB = async () => {
 
 const init = async () => {
   console.log('Starting app...');
-  await initDB();
-  await initServer();
+  await connectDB();
+  await startServer();
 };
 
 init().catch(err => {
@@ -46,7 +46,7 @@ init().catch(err => {
 
 process
   .on('unhandledRejection', reason => {
-    console.log(`Unhandled rejection, reason: ${reason.stack} `);
+    console.log(`Unhandled rejection, reason: ${reason.stack}`);
   })
   .on('uncaughtException', err => {
     console.log(err, 'Uncaught exception thrown.');
