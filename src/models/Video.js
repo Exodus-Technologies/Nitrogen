@@ -10,10 +10,10 @@ const { NODE_ENV } = config;
 //  ============================================
 const videoSchema = new Schema(
   {
-    broadcastId: { type: String, required: true },
-    archiveId: { type: String, required: true },
+    broadcastId: { type: String },
+    archiveId: { type: String },
     videoName: { type: String, required: true },
-    sessionId: { type: String, required: true },
+    sessionId: { type: String },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     isActive: {

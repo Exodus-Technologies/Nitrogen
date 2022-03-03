@@ -81,8 +81,7 @@ exports.stopBroadcast = async () => {
             archiveId,
             videoName: name,
             sessionId,
-            url: s3Location,
-            totalViews: 0
+            url: s3Location
           };
           await saveVideoToDB(body);
           return {
@@ -104,8 +103,7 @@ exports.stopBroadcast = async () => {
             archiveId,
             videoName: name,
             sessionId,
-            url: s3Location,
-            totalViews: 0
+            url: s3Location
           };
           await saveVideoToDB(body);
           return {
