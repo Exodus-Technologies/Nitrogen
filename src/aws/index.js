@@ -3,63 +3,23 @@
 import fs from 'fs';
 import {
   S3Client,
-  CreateBucketCommand,
-  HeadBucketCommand,
   PutObjectCommand,
-  ListObjectsCommand
+  ListBucketsCommand,
+  CreateBucketCommand
 } from '@aws-sdk/client-s3';
-const { AbortController } = require('@aws-sdk/abort-controller');
 import config from '../config';
 
 const { aws } = config.sources;
 const { accessKeyId, secretAccessKey, s3BucketName, region } = aws;
 
-const abortController = new AbortController();
-
+// Create S3 service object
 const s3Client = new S3Client({
-  accessKeyId,
-  secretAccessKey,
-  region
+  credentials: {
+    accessKeyId,
+    secretAccessKey,
+    region
+  }
 });
-
-export const createS3Bucket = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const params = {
-        Bucket: s3BucketName
-      };
-      const data = await s3Client.send(new CreateBucketCommand(params), {
-        abortSignal: abortController.signal
-      });
-      resolve(data);
-    } catch (err) {
-      console.log(`Error creating bucket: ${s3BucketName} `, err);
-      abortController.abort();
-      reject(err);
-    }
-  });
-};
-
-export const doesS3BucketExist = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const params = {
-        Bucket: s3BucketName
-      };
-      const data = await s3Client.send(new HeadBucketCommand(params), {
-        abortSignal: abortController.signal
-      });
-      resolve(data);
-    } catch (err) {
-      abortController.abort();
-      console.log(`Error checking status of bucket: ${s3BucketName} `, err);
-      if (err.statusCode > 400) {
-        reject(err);
-      }
-      reject(err);
-    }
-  });
-};
 
 const getFileContentFromUrl = (archivePath, url) => {
   return new Promise(async (resolve, reject) => {
@@ -79,14 +39,50 @@ const getFileContentFromUrl = (archivePath, url) => {
 const getFileContent = path => {
   return new Promise(async (resolve, reject) => {
     try {
-      fs.readFile(path, function (err, data) {
+      fs.readFile(path, function (err, buffer) {
         if (err) {
           reject(err);
         }
-        resolve(data);
+        resolve(buffer.toString());
       });
     } catch (err) {
       console.log(`Error getting file: ${path} `, err);
+      reject(err);
+    }
+  });
+};
+
+export const doesS3BucketExist = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
+      const bucket = Buckets.some(bucket => bucket.Name === s3BucketName);
+      resolve(bucket);
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({ requestId, cfId, extendedRequestId });
+      reject(err);
+    }
+  });
+};
+
+export const getObjectFromS3 = fileName => {
+  return `https://${s3BucketName}.s3.amazonaws.com/${fileName}`;
+};
+
+export const createS3Bucket = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName
+      };
+      const data = await s3Client.send(new CreateBucketCommand(params));
+      if (data.Location) {
+        resolve();
+      }
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({ requestId, cfId, extendedRequestId });
       reject(err);
     }
   });
@@ -118,18 +114,19 @@ export const uploadArchiveToS3Location = async file => {
     const tmpArchivePath = `./tmp/${name}.mp4`;
     let fileContent = '';
     if (filepath) {
-      fileContent = await getFileContent(filepath, name);
+      fileContent = await getFileContent(filepath);
     }
     if (url) {
       fileContent = await getFileContentFromUrl(tmpArchivePath, url);
     }
 
     try {
-      const location = await uploadToS3(fileContent, name);
+      await uploadToS3(fileContent, name);
+      const fileLocation = getObjectFromS3(name);
       if (url) {
         fs.unlinkSync(tmpArchivePath);
       }
-      resolve(location);
+      resolve(fileLocation);
     } catch (err) {
       console.log(`Error uploading archive to s3 bucket: ${file} `, err);
       reject(err);

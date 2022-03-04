@@ -1,13 +1,17 @@
 'use strict';
 
 import formidable from 'formidable';
+import config from '../config';
 import {
-  doesS3BucketExist,
   uploadArchiveToS3Location,
+  doesS3BucketExist,
   createS3Bucket
 } from '../aws';
 import { saveVideoToDB } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
+
+const { aws } = config.sources;
+const { s3BucketName } = aws;
 
 exports.getFileFromRequest = async req => {
   const form = formidable({ multiples: true });
@@ -27,7 +31,6 @@ exports.uploadVideo = async video => {
   try {
     const { name } = video;
     const isBucketAvaiable = await doesS3BucketExist();
-    console.log(isBucketAvaiable);
     if (isBucketAvaiable) {
       const s3Location = await uploadArchiveToS3Location(video);
       const body = {

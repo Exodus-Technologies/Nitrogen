@@ -16,7 +16,8 @@ const videoSchema = new Schema(
     sessionId: { type: String },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
-    isActive: {
+    author: { type: String },
+    isOpen: {
       type: Boolean,
       default: true
     }
