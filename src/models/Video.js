@@ -2,6 +2,7 @@
 
 import mongoose from 'mongoose';
 import config from '../config';
+import { STATUSES } from '../constants';
 
 const { Schema } = mongoose;
 const { NODE_ENV } = config;
@@ -16,10 +17,11 @@ const videoSchema = new Schema(
     sessionId: { type: String },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
-    author: { type: String },
-    isOpen: {
-      type: Boolean,
-      default: true
+    author: { type: String, required: true },
+    status: {
+      type: String,
+      enum: STATUSES,
+      default: 'free'
     }
   },
   { timestamps: true }

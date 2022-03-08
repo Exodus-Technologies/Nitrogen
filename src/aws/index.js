@@ -1,5 +1,6 @@
 'use strict';
 
+import path from 'path';
 import fs from 'fs';
 import {
   S3Client,
@@ -21,14 +22,16 @@ const s3Client = new S3Client({
   }
 });
 
-const getFileContentFromUrl = (archivePath, url) => {
+const getFileContentFromUrl = (url, path, name) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const file = fs.createWriteStream(archivePath);
+      const destinationPath = `${path}/${name}`;
+      const file = fs.createWriteStream(destinationPath);
       https.get(url, function (response) {
         response.pipe(file);
-        resolve();
       });
+      const fileContent = await getFileContent(destinationPath);
+      resolve(fileContent);
     } catch (err) {
       console.log(`Error getting file from url: ${url} `, err);
       reject(err);
@@ -43,7 +46,7 @@ const getFileContent = path => {
         if (err) {
           reject(err);
         }
-        resolve(buffer.toString());
+        resolve(buffer);
       });
     } catch (err) {
       console.log(`Error getting file: ${path} `, err);
@@ -111,13 +114,14 @@ export const uploadArchiveToS3Location = async file => {
   return new Promise(async (resolve, reject) => {
     const { name, url, filepath } = file;
     // Read content from the file
-    const tmpArchivePath = `./tmp/${name}.mp4`;
+    const uploadsPath = path.join(process.cwd(), `./uploads/`);
+
     let fileContent = '';
     if (filepath) {
       fileContent = await getFileContent(filepath);
     }
     if (url) {
-      fileContent = await getFileContentFromUrl(tmpArchivePath, url);
+      fileContent = await getFileContentFromUrl(url, uploadsPath, name);
     }
 
     try {
