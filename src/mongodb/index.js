@@ -105,3 +105,11 @@ export const updateBroadcastInDB = async broadcastId => {
 
   await Broadcast.findOneAndUpdate(filter, update, options);
 };
+
+export const seeIfVideoExist = async videoName => {
+  const existingVideo = await Video.findOne({ videoName });
+  if (existingVideo) {
+    return true;
+  }
+  return false;
+};
