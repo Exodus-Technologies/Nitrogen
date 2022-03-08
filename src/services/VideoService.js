@@ -51,22 +51,27 @@ exports.uploadVideo = async video => {
       };
     } else {
       await createS3Bucket();
-      const s3Location = await uploadArchiveToS3Location(video);
-      const body = {
-        videoName: title,
-        author,
-        url: s3Location,
-        totalViews: 0
-      };
-      await saveVideoToDB(body);
-      return {
-        statusCode: 200,
-        message: 'Video uploaded to s3 with success',
-        broadcast: {
-          videoName: name,
-          url: s3Location
-        }
-      };
+      const isBucketAvaiable = await doesS3BucketExist();
+      if (isBucketAvaiable) {
+        const s3Location = await uploadArchiveToS3Location(video);
+        const body = {
+          videoName: title,
+          author,
+          url: s3Location,
+          totalViews: 0
+        };
+        await saveVideoToDB(body);
+        return {
+          statusCode: 200,
+          message: 'Video uploaded to s3 with success',
+          broadcast: {
+            videoName: name,
+            url: s3Location
+          }
+        };
+      } else {
+        return badRequest('Unable to create s3 bucket');
+      }
     }
   } catch (err) {
     console.log(`Error uploading video to s3: `, err);
