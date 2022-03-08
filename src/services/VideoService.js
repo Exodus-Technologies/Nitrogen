@@ -16,14 +16,22 @@ const queryOps = { __v: 0, _id: 0 };
 exports.getFileFromRequest = async req => {
   const form = formidable({ multiples: true });
 
+  function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
+  }
+
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
         reject(err);
       }
-      const { originalFilename: name, filepath } = files['file'];
-      const { title, author } = fields;
-      resolve({ name, filepath, title, author });
+      if (!isEmpty(files)) {
+        const { originalFilename: name, filepath } = files['file'];
+        const { title, author } = fields;
+        resolve({ name, filepath, title, author });
+      } else {
+        reject('File not present in form data');
+      }
     });
   });
 };
