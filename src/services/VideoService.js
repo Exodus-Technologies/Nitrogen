@@ -7,7 +7,7 @@ import {
   createS3Bucket
 } from '../aws';
 import models from '../models';
-import { saveVideoToDB, updateVideoClicks, seeIfVideoExist } from '../mongodb';
+import { saveVideoToDB, updateVideoViews, seeIfVideoExist } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
 const { Video } = models;
@@ -80,15 +80,15 @@ exports.uploadVideo = async video => {
             }
           };
         } else {
-          return badRequest('Unable to create s3 bucket');
+          return badRequest('Unable to create s3 bucket.');
         }
       }
     } else {
-      return badRequest('Video with the name provide already exists');
+      return badRequest('Video with the name provide already exists.');
     }
   } catch (err) {
     console.log(`Error uploading video to s3: `, err);
-    return badImplementationRequest('Error uploading video to s3');
+    return badImplementationRequest('Error uploading video to s3.');
   }
 };
 
@@ -109,15 +109,19 @@ exports.getVideos = async query => {
   }
 };
 
-exports.updateClicks = async videoName => {
+exports.updateViews = async videoName => {
   try {
-    const videoClicks = await updateVideoClicks(videoName);
-    return {
-      statusCode: 200,
-      message: `${videoName} has ${videoClicks} clicks`
-    };
+    const videoViews = await updateVideoViews(videoName);
+    if (videoViews) {
+      return {
+        statusCode: 200,
+        message: `${videoName} has ${videoViews} views.`,
+        views: videoViews
+      };
+    }
+    return badRequest(`No videos found with name: '${videoName}'`);
   } catch (err) {
-    console.log('Error updating clicks on video: ', err);
-    return badImplementationRequest('Error Error updating clicks.');
+    console.log('Error updating views on video: ', err);
+    return badImplementationRequest('Error Error updating views.');
   }
 };

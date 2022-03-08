@@ -24,10 +24,10 @@ exports.getVideos = async (req, res, next) => {
   }
 };
 
-exports.updateClicks = async (req, res, next) => {
+exports.updateViews = async (req, res, next) => {
   try {
     const { videoName } = req.body;
-    const response = await VideoService.updateClicks(videoName);
+    const response = await VideoService.updateViews(videoName);
     res.json(response);
   } catch (err) {
     console.log(`Error with uploading files to s3: `, err);

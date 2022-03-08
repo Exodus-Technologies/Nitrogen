@@ -77,7 +77,7 @@ export const updateVideo = async videoName => {
   }
 };
 
-export const updateVideoClicks = async videoName => {
+export const updateVideoViews = async videoName => {
   try {
     const video = await Video.findOne({ videoName });
     if (video) {
@@ -86,7 +86,7 @@ export const updateVideoClicks = async videoName => {
       return video.totalViews;
     }
   } catch (err) {
-    console.log('Error updating video clicks: ', err);
+    console.log('Error updating video views: ', err);
   }
 };
 

@@ -17,6 +17,6 @@ router.get(
 
 router.put('/video-service/updateVideo', VideoController.updateVideo);
 
-router.put('/video-service/updateClicks', VideoController.updateClicks);
+router.put('/video-service/updateViews', VideoController.updateViews);
 
 export default router;

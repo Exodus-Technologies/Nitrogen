@@ -48,7 +48,7 @@ exports.startBroadcast = async archiveOptions => {
           return badRequest('Unable to start archiving.');
         }
       } else {
-        return badRequest('Unable to start broadcast');
+        return badRequest('Unable to start broadcast.');
       }
     } else {
       return badRequest('No active sessions running atm.');
