@@ -3,7 +3,7 @@
 /**
  * https://github.com/validatorjs/validator.js#validators
  */
-import { body, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 
 /**
  * "sessionId" : "session_id",
@@ -64,4 +64,26 @@ const startBroadcastValidation = [
     .optional()
 ];
 
-export { validationResult, startBroadcastValidation };
+const videoQueryValidation = [
+  query('limit')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a limit for users')
+    .optional()
+    .default(30),
+  query('videoName')
+    .isString()
+    .withMessage('Must provide a existing video title')
+    .optional(),
+  query('author')
+    .isString()
+    .withMessage('Must provide a valid video author')
+    .optional(),
+  query('status')
+    .isString()
+    .withMessage('Must provide a valid status for paid vs free videos')
+    .optional()
+];
+
+export { validationResult, startBroadcastValidation, videoQueryValidation };

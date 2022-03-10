@@ -6,7 +6,7 @@ import models from '../models';
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 const { Session, Broadcast, Video } = models;
 
-const generateDBUri = () => {
+export const generateDBUri = () => {
   return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 };
 
@@ -35,7 +35,6 @@ export const getActiveBroadcast = async () => {
 export const saveSessionToDb = async payload => {
   try {
     const session = new Session(payload);
-    console.log(session);
     await session.save();
     if (session) {
       return session;
@@ -61,11 +60,33 @@ export const saveVideoToDB = async payload => {
   try {
     const video = new Video(payload);
     await video.save();
-    if (video) {
-      return video;
-    }
   } catch (err) {
     console.log('Error saving video data to db: ', err);
+  }
+};
+
+export const updateVideo = async videoName => {
+  try {
+    const filter = { videoName };
+    const options = { upsert: true };
+    const update = { ...payload };
+
+    await Video.findOneAndUpdate(filter, update, options);
+  } catch (err) {
+    console.log('Error updating video data to db: ', err);
+  }
+};
+
+export const updateVideoViews = async videoName => {
+  try {
+    const video = await Video.findOne({ videoName });
+    if (video) {
+      video.totalViews += 1;
+      await video.save();
+      return video.totalViews;
+    }
+  } catch (err) {
+    console.log('Error updating video views: ', err);
   }
 };
 
@@ -85,4 +106,10 @@ export const updateBroadcastInDB = async broadcastId => {
   await Broadcast.findOneAndUpdate(filter, update, options);
 };
 
-export { generateDBUri };
+export const seeIfVideoExist = async videoName => {
+  const existingVideo = await Video.findOne({ videoName });
+  if (existingVideo) {
+    return true;
+  }
+  return false;
+};
