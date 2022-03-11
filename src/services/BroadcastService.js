@@ -1,12 +1,6 @@
 'use strict';
 
-import {
-  startBroadcast,
-  startArchive,
-  stopBroadcast,
-  stopArchive,
-  getArchiveById
-} from '../vonage';
+import { startBroadcast, stopBroadcast } from '../vonage';
 import {
   getActiveSession,
   saveBroadcastToDb,
@@ -16,7 +10,8 @@ import {
 import {
   doesS3BucketExist,
   uploadArchiveToS3Location,
-  createS3Bucket
+  createS3Bucket,
+  getObjectUrlFromS3
 } from '../aws';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -51,7 +46,7 @@ exports.startBroadcast = async archiveOptions => {
         return badRequest('Unable to start broadcast.');
       }
     } else {
-      return badRequest('No active sessions running atm.');
+      return badRequest('No active sessions running.');
     }
   } catch (err) {
     console.log(`Error starting broadcast: `, err);
@@ -63,69 +58,75 @@ exports.startBroadcast = async archiveOptions => {
 
 exports.stopBroadcast = async () => {
   try {
-    const { broadcastId, archiveId } = await getActiveBroadcast();
+    const { broadcastId } = await getActiveBroadcast();
     const stoppedBroadcast = await stopBroadcast(broadcastId);
     if (stoppedBroadcast) {
       const { sessionId } = stoppedBroadcast;
       await updateBroadcastInDB(broadcastId);
       await updateSessionInDB(sessionId);
-      await stopArchive(archiveId);
-      const archive = await getArchiveById(archiveId);
-      if (archive) {
-        const { name } = archive;
-        const isBucketAvaiable = await doesS3BucketExist();
-        if (isBucketAvaiable) {
-          const s3Location = await uploadArchiveToS3Location(archive);
-          const body = {
-            broadcastId,
-            archiveId,
-            videoName: name,
-            sessionId,
-            url: s3Location
-          };
-          await saveVideoToDB(body);
-          return {
-            statusCode: 200,
-            message: 'Broadcast was stopped with success',
-            broadcast: {
-              broadcastId,
-              archiveId,
-              sessionId,
-              videoName: name,
-              url: s3Location
-            }
-          };
-        } else {
-          await createS3Bucket();
-          const s3Location = await uploadArchiveToS3Location(archive);
-          const body = {
-            broadcastId,
-            archiveId,
-            videoName: name,
-            sessionId,
-            url: s3Location
-          };
-          await saveVideoToDB(body);
-          return {
-            statusCode: 200,
-            message: 'Broadcast was stopped with success',
-            broadcast: {
-              broadcastId,
-              archiveId,
-              sessionId,
-              videoName: name,
-              url: s3Location
-            }
-          };
-        }
-      } else {
-        return badRequest('Unable to retrieve archive!');
-      }
+      return {
+        statusCode: 200,
+        message: 'Broadcast was stopped successfully.'
+      };
     } else {
       return badRequest('Unable to stop broadcast!');
     }
   } catch (error) {
     console.log(`Error stopping broadcast: `, err);
     return badImplementationRequest('Error stopping broadcast');
+  }
+};
+
+exports.archiveCallback = async archive => {
+  try {
+    const { id: archiveId, name, partnerId: apiKey, sessionId } = archive;
+    const doesBucketExist = await doesS3BucketExist();
+    if (doesBucketExist) {
+      const s3Url = getObjectUrlFromS3(name);
+      const body = {
+        archiveId,
+        videoName: name,
+        apiKey,
+        sessionId,
+        url: s3Url
+      };
+      await saveVideoRefToDB(body);
+      return {
+        statusCode: 200,
+        message: 'Archive was transferred with success.',
+        archive: {
+          archiveId,
+          videoName: name,
+          apiKey,
+          sessionId,
+          url: s3Url
+        }
+      };
+    } else {
+      await createS3Bucket();
+      const s3Location = await uploadArchiveToS3Location(archive);
+      const body = {
+        archiveId,
+        videoName: name,
+        apiKey,
+        sessionId,
+        url: s3Location
+      };
+      await saveVideoRefToDB(body);
+      return {
+        statusCode: 200,
+        message: 'Broadcast was stopped with success',
+        archive: {
+          archiveId,
+          videoName: name,
+          apiKey,
+          sessionId,
+          url: s3Location
+        }
+      };
+    }
+  } catch (error) {
+    console.log(`Error executing archive callback: `, err);
+    return badImplementationRequest('Error executing archive callback.');
   }
 };

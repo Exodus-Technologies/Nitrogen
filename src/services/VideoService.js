@@ -4,22 +4,45 @@ import formidable from 'formidable';
 import {
   uploadArchiveToS3Location,
   doesS3BucketExist,
-  createS3Bucket
+  createS3Bucket,
+  doesS3ObjectExist,
+  deleteVideoByKey
 } from '../aws';
 import models from '../models';
-import { saveVideoToDB, updateVideoViews, seeIfVideoExist } from '../mongodb';
+import {
+  saveVideoRefToDB,
+  updateVideoViews,
+  seeIfVideoExist
+} from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
 const { Video } = models;
 const queryOps = { __v: 0, _id: 0 };
 
+const form = formidable({ multiples: true });
+
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
+
 exports.getFileFromRequest = async req => {
-  const form = formidable({ multiples: true });
+  return new Promise((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        reject(err);
+      }
+      if (!isEmpty(files)) {
+        const { filepath } = files['file'];
+        const { title, author } = fields;
+        resolve({ filepath, title, title: name, author });
+      } else {
+        reject('File not present in form data');
+      }
+    });
+  });
+};
 
-  function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-  }
-
+exports.getPayloadFromRequest = async req => {
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
@@ -30,7 +53,8 @@ exports.getFileFromRequest = async req => {
         const { title, author } = fields;
         resolve({ name, filepath, title, author });
       } else {
-        reject('File not present in form data');
+        const { title: name, title, author } = fields;
+        resolve({ name, title, author });
       }
     });
   });
@@ -38,24 +62,24 @@ exports.getFileFromRequest = async req => {
 
 exports.uploadVideo = async video => {
   try {
-    const { name, title, author } = video;
-    const doesVideoExist = await seeIfVideoExist(title);
+    const { name, author } = video;
+    const doesVideoExist = await seeIfVideoExist(name);
     if (!doesVideoExist) {
       const isBucketAvaiable = await doesS3BucketExist();
       if (isBucketAvaiable) {
         const s3Location = await uploadArchiveToS3Location(video);
         const body = {
-          videoName: title,
+          videoName: name,
           author,
           url: s3Location,
           totalViews: 0
         };
-        await saveVideoToDB(body);
+        await saveVideoRefToDB(body);
         return {
           statusCode: 200,
           message: 'Video uploaded to s3 with success',
           broadcast: {
-            videoName: title,
+            videoName: name,
             url: s3Location
           }
         };
@@ -65,12 +89,12 @@ exports.uploadVideo = async video => {
         if (isBucketAvaiable) {
           const s3Location = await uploadArchiveToS3Location(video);
           const body = {
-            videoName: title,
+            videoName: name,
             author,
             url: s3Location,
             totalViews: 0
           };
-          await saveVideoToDB(body);
+          await saveVideoRefToDB(body);
           return {
             statusCode: 200,
             message: 'Video uploaded to s3 with success',
@@ -122,6 +146,66 @@ exports.updateViews = async videoName => {
     return badRequest(`No videos found with name: '${videoName}'`);
   } catch (err) {
     console.log('Error updating views on video: ', err);
-    return badImplementationRequest('Error Error updating views.');
+    return badImplementationRequest('Error updating views.');
+  }
+};
+
+exports.updateVideo = async video => {
+  try {
+    const { name, author } = video;
+    const doesVideoExist = await seeIfVideoExist(name);
+    if (!doesVideoExist) {
+      const isBucketAvaiable = await doesS3BucketExist();
+      if (isBucketAvaiable) {
+        const s3Object = await doesS3ObjectExist(name);
+        if (s3Object) {
+          await deleteVideoByKey(name);
+        }
+        const s3Location = await uploadArchiveToS3Location(video);
+        const body = {
+          videoName: name,
+          author,
+          url: s3Location,
+          totalViews: 0
+        };
+        await saveVideoRefToDB(body);
+        return {
+          statusCode: 200,
+          message: 'Video uploaded to s3 with success',
+          broadcast: {
+            videoName: name,
+            url: s3Location
+          }
+        };
+      } else {
+        await createS3Bucket();
+        const isBucketAvaiable = await doesS3BucketExist();
+        if (isBucketAvaiable) {
+          const s3Location = await uploadArchiveToS3Location(video);
+          const body = {
+            videoName: name,
+            author,
+            url: s3Location,
+            totalViews: 0
+          };
+          await saveVideoRefToDB(body);
+          return {
+            statusCode: 200,
+            message: 'Video uploaded to s3 with success',
+            broadcast: {
+              videoName: name,
+              url: s3Location
+            }
+          };
+        } else {
+          return badRequest('Unable to create s3 bucket.');
+        }
+      }
+    } else {
+      return badRequest('Video with the name provide already exists.');
+    }
+  } catch (err) {
+    console.log(`Error uploading video to s3: `, err);
+    return badImplementationRequest('Error uploading video to s3.');
   }
 };

@@ -86,4 +86,29 @@ const videoQueryValidation = [
     .optional()
 ];
 
-export { validationResult, startBroadcastValidation, videoQueryValidation };
+const videoUpdateValidation = [
+  query('videoName')
+    .isString()
+    .withMessage('Must provide a new video title')
+    .optional(),
+  query('author')
+    .isString()
+    .withMessage('Must provide a valid video author')
+    .optional(),
+  query('status')
+    .isString()
+    .withMessage('Must provide a valid status for paid vs free videos')
+    .optional()
+];
+
+const videoViewsUpdateValidation = [
+  query('videoName').isString().withMessage('Must provide a new video title')
+];
+
+export {
+  validationResult,
+  startBroadcastValidation,
+  videoQueryValidation,
+  videoUpdateValidation,
+  videoViewsUpdateValidation
+};

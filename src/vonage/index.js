@@ -6,12 +6,15 @@ const opentok = new OpenTok(apiKey, apiSecret);
 
 export const createSession = () => {
   return new Promise((resolve, reject) => {
-    opentok.createSession({ mediaMode: 'routed' }, function (error, session) {
-      if (error) {
-        reject(error);
+    opentok.createSession(
+      { mediaMode: 'routed', archiveMode: 'always' },
+      function (error, session) {
+        if (error) {
+          reject(error);
+        }
+        resolve(session);
       }
-      resolve(session);
-    });
+    );
   });
 };
 
@@ -43,17 +46,6 @@ export const startBroadcast = (
   });
 };
 
-export const startArchive = (sessionId, archiveOptions) => {
-  return new Promise((resolve, reject) => {
-    opentok.startArchive(sessionId, archiveOptions, function (error, archive) {
-      if (error) {
-        reject(error);
-      }
-      resolve(archive);
-    });
-  });
-};
-
 export const stopBroadcast = broadcastId => {
   return new Promise((resolve, reject) => {
     opentok.stopBroadcast(broadcastId, function (error, broadcast) {
@@ -61,17 +53,6 @@ export const stopBroadcast = broadcastId => {
         reject(error);
       }
       resolve(broadcast);
-    });
-  });
-};
-
-export const getArchiveById = async archiveId => {
-  return new Promise((resolve, reject) => {
-    opentok.getArchiveById(archiveId, function (err, archive) {
-      if (err) {
-        reject(err);
-      }
-      resolve(archive);
     });
   });
 };

@@ -17,4 +17,9 @@ router.post(
 
 router.post('/video-service/stopBroadcast', BroadcastController.stopBroadcast);
 
+router.post(
+  '/video-service/archiveCallback',
+  BroadcastController.archiveCallback
+);
+
 export default router;

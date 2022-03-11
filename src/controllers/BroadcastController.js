@@ -22,3 +22,13 @@ exports.stopBroadcast = async (_, res, next) => {
     next(err);
   }
 };
+
+exports.archiveCallback = async (req, res, next) => {
+  try {
+    const response = await BroadcastService.archiveCallback(req.body);
+    res.json(response);
+  } catch (err) {
+    console.log(`Error with executing archiving callback for video: `, err);
+    next(err);
+  }
+};
