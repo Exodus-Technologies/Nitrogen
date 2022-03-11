@@ -56,7 +56,7 @@ export const saveBroadcastToDb = async payload => {
   }
 };
 
-export const saveVideoToDB = async payload => {
+export const saveVideoRefToDB = async payload => {
   try {
     const video = new Video(payload);
     await video.save();
@@ -108,8 +108,5 @@ export const updateBroadcastInDB = async broadcastId => {
 
 export const seeIfVideoExist = async videoName => {
   const existingVideo = await Video.findOne({ videoName });
-  if (existingVideo) {
-    return true;
-  }
-  return false;
+  return !!existingVideo;
 };

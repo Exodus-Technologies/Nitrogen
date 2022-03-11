@@ -1,6 +1,10 @@
 import express from 'express';
 import { VideoController } from '../controllers';
-import { videoQueryValidation } from '../validations';
+import {
+  videoQueryValidation,
+  videoUpdateValidation,
+  videoViewsUpdateValidation
+} from '../validations';
 import { validationHandler } from '../utils';
 
 const { Router } = express;
@@ -15,8 +19,18 @@ router.get(
   VideoController.getVideos
 );
 
-router.put('/video-service/updateVideo', VideoController.updateVideo);
+router.put(
+  '/video-service/updateVideo',
+  videoUpdateValidation,
+  validationHandler,
+  VideoController.updateVideo
+);
 
-router.put('/video-service/updateViews', VideoController.updateViews);
+router.put(
+  '/video-service/updateViews',
+  videoViewsUpdateValidation,
+  validationHandler,
+  VideoController.updateViews
+);
 
 export default router;

@@ -6,7 +6,9 @@ import {
   S3Client,
   PutObjectCommand,
   ListBucketsCommand,
-  CreateBucketCommand
+  HeadObjectCommand,
+  CreateBucketCommand,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import config from '../config';
 
@@ -30,7 +32,7 @@ const getFileContentFromUrl = (url, path, name) => {
       https.get(url, function (response) {
         response.pipe(file);
       });
-      const fileContent = await getFileContent(destinationPath);
+      const fileContent = await getFileContentFromPath(destinationPath);
       resolve(fileContent);
     } catch (err) {
       console.log(`Error getting file from url: ${url} `, err);
@@ -39,7 +41,7 @@ const getFileContentFromUrl = (url, path, name) => {
   });
 };
 
-const getFileContent = path => {
+const getFileContentFromPath = path => {
   return new Promise(async (resolve, reject) => {
     try {
       fs.readFile(path, function (err, buffer) {
@@ -69,7 +71,24 @@ export const doesS3BucketExist = () => {
   });
 };
 
-export const getObjectFromS3 = fileName => {
+export const doesS3ObjectExist = key => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName,
+        Key: key
+      };
+      const s3Object = await s3Client.send(new HeadObjectCommand(params));
+      resolve(s3Object);
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({ requestId, cfId, extendedRequestId });
+      reject(err);
+    }
+  });
+};
+
+export const getObjectUrlFromS3 = fileName => {
   return `https://${s3BucketName}.s3.amazonaws.com/${fileName}`;
 };
 
@@ -79,10 +98,25 @@ export const createS3Bucket = () => {
       const params = {
         Bucket: s3BucketName
       };
-      const data = await s3Client.send(new CreateBucketCommand(params));
-      if (data.Location) {
-        resolve();
-      }
+      await s3Client.send(new CreateBucketCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({ requestId, cfId, extendedRequestId });
+      reject(err);
+    }
+  });
+};
+
+export const deleteVideoByKey = key => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3BucketName,
+        Key: key
+      };
+      await s3Client.send(new DeleteObjectCommand(params));
+      resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({ requestId, cfId, extendedRequestId });
@@ -118,7 +152,7 @@ export const uploadArchiveToS3Location = async file => {
 
     let fileContent = '';
     if (filepath) {
-      fileContent = await getFileContent(filepath);
+      fileContent = await getFileContentFromPath(filepath);
     }
     if (url) {
       fileContent = await getFileContentFromUrl(url, uploadsPath, name);
@@ -126,7 +160,7 @@ export const uploadArchiveToS3Location = async file => {
 
     try {
       await uploadToS3(fileContent, name);
-      const fileLocation = getObjectFromS3(name);
+      const fileLocation = getObjectUrlFromS3(name);
       if (url) {
         fs.unlinkSync(tmpArchivePath);
       }

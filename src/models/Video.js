@@ -14,6 +14,7 @@ const videoSchema = new Schema(
     broadcastId: { type: String },
     archiveId: { type: String },
     videoName: { type: String, required: true },
+    apiKey: { type: String },
     sessionId: { type: String },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
