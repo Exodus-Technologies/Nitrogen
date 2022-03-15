@@ -1,7 +1,7 @@
 'use strict';
 
 import BroadcastController from './BroadcastController';
-import SessionController from './SessionController';
 import VideoController from './VideoController';
+import BambuserController from './BambuserController';
 
-export { BroadcastController, SessionController, VideoController };
+export { BroadcastController, VideoController, BambuserController };

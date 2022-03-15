@@ -86,6 +86,10 @@ const videoQueryValidation = [
     .optional()
 ];
 
+const appIdQueryValidation = [
+  query('platform').isString().withMessage('Must provide a device platform.')
+];
+
 const videoUpdateValidation = [
   query('videoName')
     .isString()
@@ -110,5 +114,6 @@ export {
   startBroadcastValidation,
   videoQueryValidation,
   videoUpdateValidation,
+  appIdQueryValidation,
   videoViewsUpdateValidation
 };

@@ -12,8 +12,8 @@ import { requestResponse, errorHandler } from './utils';
 import {
   appRouter,
   broadcastRouter,
-  sessionRouter,
-  videoRouter
+  videoRouter,
+  bambuserRouter
 } from './routes';
 import swagger from './swagger';
 
@@ -61,17 +61,17 @@ console.log('Loaded request/response middleware.');
 server.use(appRouter);
 console.log('Loaded server routes middleware.');
 
-//Session middleware
-server.use(sessionRouter);
-console.log('Loaded session routes middleware.');
-
 //Broadcast middleware
-server.use(broadcastRouter);
-console.log('Loaded broadcast routes middleware.');
+// server.use(broadcastRouter);
+// console.log('Loaded broadcast routes middleware.');
 
 //Video middleware
 server.use(videoRouter);
 console.log('Loaded video routes middleware.');
+
+//Bambuser middleware
+server.use(bambuserRouter);
+console.log('Loaded bambuser routes middleware.');
 
 //Swagger middleware
 server.use(swagger);

@@ -4,25 +4,14 @@ import config from '../config';
 import models from '../models';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
-const { Session, Broadcast, Video } = models;
 
 export const generateDBUri = () => {
   return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 };
 
-export const getActiveSession = async () => {
-  try {
-    const session = await Session.findOne({ isActive: true });
-    if (session) {
-      return session;
-    }
-  } catch (err) {
-    console.log('Error getting most latest active session: ', err);
-  }
-};
-
 export const getActiveBroadcast = async () => {
   try {
+    const { Broadcast } = models;
     const broadcast = await Broadcast.findOne({ isActive: true });
     if (broadcast) {
       return broadcast;
@@ -32,20 +21,9 @@ export const getActiveBroadcast = async () => {
   }
 };
 
-export const saveSessionToDb = async payload => {
-  try {
-    const session = new Session(payload);
-    await session.save();
-    if (session) {
-      return session;
-    }
-  } catch (err) {
-    console.log('Error saving session data to db: ', err);
-  }
-};
-
 export const saveBroadcastToDb = async payload => {
   try {
+    const { Broadcast } = models;
     const broadcast = new Broadcast(payload);
     await broadcast.save();
     if (broadcast) {
@@ -58,6 +36,7 @@ export const saveBroadcastToDb = async payload => {
 
 export const saveVideoRefToDB = async payload => {
   try {
+    const { Video } = models;
     const video = new Video(payload);
     await video.save();
   } catch (err) {
@@ -67,6 +46,7 @@ export const saveVideoRefToDB = async payload => {
 
 export const updateVideo = async videoName => {
   try {
+    const { Video } = models;
     const filter = { videoName };
     const options = { upsert: true };
     const update = { ...payload };
@@ -79,6 +59,7 @@ export const updateVideo = async videoName => {
 
 export const updateVideoViews = async videoName => {
   try {
+    const { Video } = models;
     const video = await Video.findOne({ videoName });
     if (video) {
       video.totalViews += 1;
@@ -90,23 +71,32 @@ export const updateVideoViews = async videoName => {
   }
 };
 
-export const updateSessionInDB = async sessionId => {
-  const filter = { sessionId };
-  const options = { new: true };
-  const update = { isActive: false };
-
-  await Session.findOneAndUpdate(filter, update, options);
-};
-
 export const updateBroadcastInDB = async broadcastId => {
-  const filter = { broadcastId };
-  const options = { new: true };
-  const update = { isActive: false };
-
-  await Broadcast.findOneAndUpdate(filter, update, options);
+  try {
+    const { Broadcast } = models;
+    const filter = { broadcastId };
+    const options = { new: true };
+    const update = { isActive: false };
+    await Broadcast.findOneAndUpdate(filter, update, options);
+  } catch (err) {
+    console.log('Error updating broadcast status: ', err);
+  }
 };
 
 export const seeIfVideoExist = async videoName => {
+  const { Video } = models;
   const existingVideo = await Video.findOne({ videoName });
   return !!existingVideo;
+};
+
+export const getApplicationId = async platform => {
+  try {
+    const { ApplicationId } = models;
+    const applicationId = await ApplicationId.findOne({ platform });
+    if (applicationId) {
+      return applicationId.appId;
+    }
+  } catch (err) {
+    console.log('Error getting applicationId: ', err);
+  }
 };

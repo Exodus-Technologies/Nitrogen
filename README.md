@@ -1,6 +1,6 @@
 # Nitrogen
 
-Microservice for all interactions for Vonage integration which includes: startSession, startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)
+Microservice for all interactions for bambuser integration which includes: startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)
 
 # Requirements
 
@@ -57,13 +57,16 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - NODE_ENV (node environment)
 - PORT (application port)
 - HOST (hostname for application)
-- API_KEY (Vonage API key)
-- API_SECRET (Vonage API Secret)
-- SESSION_COLLECTION_NAME (name for sessions collection)
 - CLUSTER_NAME (mongo db clsuter name)
+- BROADCAST_COLLECTION_NAME (name of broadcast collection)
 - DB_NAME (databse name)
 - DB_USER (databse user name)
 - DB_PASS (databse user password)
+- ACCOUNT_ID (AWS Account Id)
+- AWS_ACCESS_KEY_ID (AWS access key)
+- AWS_SECRET_ACCESS_KEY (AWS secret access key)
+  AWS_REGION (AWS region)
+  S3_BUCKET_NAME (AWS S3 bucket name or key)
 
 # API Definition
 
@@ -87,6 +90,13 @@ See `package.json` for description of task.
 
     $ npm start
 
-# Deployment (Docker and Amazon Kubernetes or EKS)
+# Deployment (Docker and Amazon Container Service or ECS)
 
-Coming Soon...
+Nitrogen utilizes various services provides by AWS:
+
+- Route 53 (DNS)
+- EC2 (Load balancer, Target Groups, Security groups)
+- ECR (Docker container registry)
+- ECS (Container Services that handles autoscaling and destination of "tasks")
+
+See [host](http://livestream.exodustechnologies.com/video-service/probeCheck) for more details and a test drive...

@@ -1,3 +1,3 @@
 'use strict';
 
-export const STATUSES = ['free', 'paid'];
+export const PLATFORMS = ['android', 'ios', 'web'];
