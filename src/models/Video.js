@@ -2,7 +2,6 @@
 
 import mongoose from 'mongoose';
 import config from '../config';
-import { STATUSES } from '../constants';
 
 const { Schema } = mongoose;
 const { NODE_ENV } = config;
@@ -11,18 +10,14 @@ const { NODE_ENV } = config;
 //  ============================================
 const videoSchema = new Schema(
   {
+    title: { type: String, required: true },
     broadcastId: { type: String },
-    archiveId: { type: String },
-    videoName: { type: String, required: true },
-    apiKey: { type: String },
-    sessionId: { type: String },
     url: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
-    status: {
-      type: String,
-      enum: STATUSES,
-      default: 'free'
+    paid: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

@@ -1,7 +1,7 @@
 {
   "name": "nitrogen",
   "version": "1.0.0",
-  "description": "Microservice for all interactions for Vonage integration which includes: startSession, startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
+  "description": "Microservice for all interactions for bambuser integration which includes: startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

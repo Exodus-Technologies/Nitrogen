@@ -1,7 +1,7 @@
 'use strict';
 
 import BroadcastService from './BroadcastService';
-import SessionService from './SessionService';
 import VideoService from './VideoService';
+import BambuserService from './BambuserService';
 
-export { BroadcastService, SessionService, VideoService };
+export { BroadcastService, VideoService, BambuserService };
