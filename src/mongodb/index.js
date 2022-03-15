@@ -38,16 +38,18 @@ export const saveVideoRefToDB = async payload => {
   try {
     const { Video } = models;
     const video = new Video(payload);
-    await video.save();
+    const createdVideo = await video.save();
+    return createdVideo;
   } catch (err) {
     console.log('Error saving video data to db: ', err);
   }
 };
 
-export const updateVideo = async videoName => {
+export const updateVideo = async payload => {
   try {
     const { Video } = models;
-    const filter = { videoName };
+    const { videoId } = payload;
+    const filter = { videoId };
     const options = { upsert: true };
     const update = { ...payload };
 
@@ -57,10 +59,10 @@ export const updateVideo = async videoName => {
   }
 };
 
-export const updateVideoViews = async videoName => {
+export const updateVideoViews = async videoId => {
   try {
     const { Video } = models;
-    const video = await Video.findOne({ videoName });
+    const video = await Video.findOne({ videoId });
     if (video) {
       video.totalViews += 1;
       await video.save();
@@ -83,20 +85,8 @@ export const updateBroadcastInDB = async broadcastId => {
   }
 };
 
-export const seeIfVideoExist = async videoName => {
+export const getVideoByProperty = async (property, value) => {
   const { Video } = models;
-  const existingVideo = await Video.findOne({ videoName });
-  return !!existingVideo;
-};
-
-export const getApplicationId = async platform => {
-  try {
-    const { ApplicationId } = models;
-    const applicationId = await ApplicationId.findOne({ platform });
-    if (applicationId) {
-      return applicationId.appId;
-    }
-  } catch (err) {
-    console.log('Error getting applicationId: ', err);
-  }
+  const existingVideo = await Video.findOne({ [property]: value });
+  return existingVideo;
 };

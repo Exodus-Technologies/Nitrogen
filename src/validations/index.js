@@ -5,20 +5,6 @@
  */
 import { body, query, validationResult } from 'express-validator';
 
-/**
- * "sessionId" : "session_id",
-    "hasAudio" : true,
-    "hasVideo" : true,
-    "layout" : {
-      "type": "custom",
-      "stylesheet": "the layout stylesheet (only used with type == custom)",
-      "screenshareType": "the layout type to use when there is a screen-sharing stream (optional)"
-    },
-    "name" : "archive_name",
-    "outputMode" : "composed",
-    "resolution" : "640x480",
-    "streamMode" : "auto"
- */
 const startBroadcastValidation = [
   body('sessionId')
     .isString()
@@ -72,7 +58,7 @@ const videoQueryValidation = [
     .withMessage('Must provide a limit for users')
     .optional()
     .default(30),
-  query('videoName')
+  query('title')
     .isString()
     .withMessage('Must provide a existing video title')
     .optional(),
@@ -91,22 +77,22 @@ const appIdQueryValidation = [
 ];
 
 const videoUpdateValidation = [
-  query('videoName')
+  body('title')
     .isString()
     .withMessage('Must provide a new video title')
     .optional(),
-  query('author')
+  body('author')
     .isString()
     .withMessage('Must provide a valid video author')
     .optional(),
-  query('status')
-    .isString()
+  body('paid')
+    .isBoolean()
     .withMessage('Must provide a valid status for paid vs free videos')
     .optional()
 ];
 
 const videoViewsUpdateValidation = [
-  query('videoName').isString().withMessage('Must provide a new video title')
+  body('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
 export {

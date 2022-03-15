@@ -1,12 +1,14 @@
 'use strict';
 
+import config from '../config';
 import { badImplementationRequest, badRequest } from '../response-codes';
-import { getApplicationId } from '../mongodb';
+
+const { bambuser } = config.sources;
 
 exports.getApplicationId = async query => {
   try {
     const { platform } = query;
-    const applicationId = await getApplicationId(platform);
+    const applicationId = bambuser[platform];
     if (applicationId) {
       return {
         statusCode: 200,
