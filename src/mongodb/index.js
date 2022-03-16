@@ -85,8 +85,14 @@ export const updateBroadcastInDB = async broadcastId => {
   }
 };
 
-export const getVideoByProperty = async (property, value) => {
+export const getVideoByTitle = async title => {
   const { Video } = models;
-  const existingVideo = await Video.findOne({ [property]: value });
+  const existingVideo = await Video.findOne({ title });
+  return existingVideo;
+};
+
+export const getVideoById = async videoId => {
+  const { Video } = models;
+  const existingVideo = await Video.findOne({ videoId });
   return existingVideo;
 };
