@@ -12,7 +12,8 @@ import models from '../models';
 import {
   saveVideoRefToDB,
   updateVideoViews,
-  getVideoByProperty,
+  getVideoById,
+  getVideoByTitle,
   updateVideo
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
@@ -46,7 +47,7 @@ exports.getPayloadFromRequest = async req => {
 exports.uploadVideo = async archive => {
   try {
     const { title, author } = archive;
-    const video = await getVideoByProperty('title', title);
+    const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
         `Video with the title ${title} provide already exists.`
@@ -110,6 +111,23 @@ exports.getVideos = async query => {
   }
 };
 
+exports.getVideo = async videoId => {
+  try {
+    const video = await getVideoById(videoId);
+    if (video) {
+      return {
+        statusCode: 200,
+        video
+      };
+    } else {
+      return badRequest(`No video found with id provided.`);
+    }
+  } catch (err) {
+    console.log('Error getting video by id ', err);
+    return badImplementationRequest('Error getting video by id.');
+  }
+};
+
 exports.updateViews = async videoId => {
   try {
     const videoViews = await updateVideoViews(videoId);
@@ -130,7 +148,7 @@ exports.updateViews = async videoId => {
 exports.updateVideo = async archive => {
   try {
     const { title, filepath, videoId } = archive;
-    const video = await getVideoByProperty('videoId', videoId);
+    const video = await getVideoById(videoId);
     if (video) {
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
@@ -168,6 +186,7 @@ exports.updateVideo = async archive => {
         };
       }
     } else {
+      return badRequest(`No video found to update.`);
     }
   } catch (err) {
     console.log(`Error updating video metadata: `, err);

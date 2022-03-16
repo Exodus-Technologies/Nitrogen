@@ -62,11 +62,13 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - DB_NAME (databse name)
 - DB_USER (databse user name)
 - DB_PASS (databse user password)
-- ACCOUNT_ID (AWS Account Id)
 - AWS_ACCESS_KEY_ID (AWS access key)
 - AWS_SECRET_ACCESS_KEY (AWS secret access key)
-  AWS_REGION (AWS region)
-  S3_BUCKET_NAME (AWS S3 bucket name or key)
+- AWS_REGION (AWS region)
+- S3_BUCKET_NAME (AWS S3 bucket name or key)
+- BAMBUSER_APP_KEY_IOS (bambuser appkey for ios devices)
+- BAMBUSER_APP_KEY_ANDROID (bambuser appkey for android devices)
+- BAMBUSER_APP_KEY_WEB (bambuser appkey for desktop apps)
 
 # API Definition
 
