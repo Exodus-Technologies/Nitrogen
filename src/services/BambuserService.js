@@ -3,12 +3,12 @@
 import config from '../config';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
-const { bambuser } = config.sources;
+const { platfromKeys } = config.sources.bambuser;
 
 exports.getApplicationId = async query => {
   try {
     const { platform } = query;
-    const applicationId = bambuser[platform];
+    const applicationId = platfromKeys[platform];
     if (applicationId) {
       return {
         statusCode: 200,

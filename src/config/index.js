@@ -10,7 +10,6 @@ const config = {
     aws: {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      accountId: process.env.ACCOUNT_ID,
       region: process.env.AWS_REGION,
       s3BucketName: process.env.S3_BUCKET_NAME
     },
@@ -27,9 +26,11 @@ const config = {
       }
     },
     bambuser: {
-      ios: process.env.BAMBUSER_APP_KEY_IOS,
-      android: process.env.BAMBUSER_APP_KEY_ANDROID,
-      web: process.env.BAMBUSER_APP_KEY_WEB
+      platfromKeys: {
+        ios: process.env.BAMBUSER_APP_KEY_IOS,
+        android: process.env.BAMBUSER_APP_KEY_ANDROID,
+        web: process.env.BAMBUSER_APP_KEY_WEB
+      }
     }
   }
 };
