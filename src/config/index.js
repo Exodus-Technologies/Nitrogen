@@ -26,6 +26,9 @@ const config = {
       }
     },
     bambuser: {
+      apiKey: process.env.BAMBUSER_API_KEY,
+      daId: process.env.BAMBUSER_DAID,
+      daSecret: process.env.BAMBUSER_DASECRET,
       platfromKeys: {
         ios: process.env.BAMBUSER_APP_KEY_IOS,
         android: process.env.BAMBUSER_APP_KEY_ANDROID,
