@@ -1,5 +1,8 @@
 import express from 'express';
-import { appIdQueryValidation } from '../validations';
+import {
+  appIdQueryValidation,
+  bambsterBroadcastValidation
+} from '../validations';
 import { validationHandler } from '../utils';
 import { BambuserController } from '../controllers';
 
@@ -15,6 +18,8 @@ router.get(
 
 router.post(
   '/video-service/webHookCallback',
+  bambsterBroadcastValidation,
+  validationHandler,
   BambuserController.webHookCallback
 );
 
