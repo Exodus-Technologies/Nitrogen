@@ -65,7 +65,12 @@ export const doesS3BucketExist = () => {
       resolve(bucket);
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
-      console.log({ requestId, cfId, extendedRequestId });
+      console.log({
+        message: 'doesS3BucketExist',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
       reject(err);
     }
   });
@@ -82,7 +87,12 @@ export const doesS3ObjectExist = key => {
       resolve(s3Object);
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
-      console.log({ requestId, cfId, extendedRequestId });
+      console.log({
+        message: 'doesS3ObjectExist',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
       reject(err);
     }
   });
@@ -102,7 +112,12 @@ export const createS3Bucket = () => {
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
-      console.log({ requestId, cfId, extendedRequestId });
+      console.log({
+        message: 'createS3Bucket',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
       reject(err);
     }
   });
@@ -119,18 +134,23 @@ export const deleteVideoByKey = key => {
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
-      console.log({ requestId, cfId, extendedRequestId });
+      console.log({
+        message: 'deleteVideoByKey',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
       reject(err);
     }
   });
 };
 
-const uploadToS3 = (fileContent, name) => {
+const uploadToS3 = (fileContent, key) => {
   return new Promise(async (resolve, reject) => {
     // Setting up S3 upload parameters
     const params = {
       Bucket: s3BucketName,
-      Key: name, // File name you want to save as in S3
+      Key: key, // File name you want to save as in S3
       Body: fileContent,
       ACL: 'public-read'
     };
@@ -146,7 +166,7 @@ const uploadToS3 = (fileContent, name) => {
 
 export const uploadArchiveToS3Location = async file => {
   return new Promise(async (resolve, reject) => {
-    const { name, url, filepath } = file;
+    const { title, url, filepath } = file;
     // Read content from the file
     const uploadsPath = path.join(process.cwd(), `./uploads/`);
 
@@ -155,12 +175,12 @@ export const uploadArchiveToS3Location = async file => {
       fileContent = await getFileContentFromPath(filepath);
     }
     if (url) {
-      fileContent = await getFileContentFromUrl(url, uploadsPath, name);
+      fileContent = await getFileContentFromUrl(url, uploadsPath, title);
     }
 
     try {
-      await uploadToS3(fileContent, name);
-      const fileLocation = getObjectUrlFromS3(name);
+      await uploadToS3(fileContent, title);
+      const fileLocation = getObjectUrlFromS3(title);
       if (url) {
         fs.unlinkSync(tmpArchivePath);
       }

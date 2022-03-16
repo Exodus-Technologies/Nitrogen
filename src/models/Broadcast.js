@@ -2,41 +2,17 @@
 
 import mongoose from 'mongoose';
 import config from '../config';
+import mongooseSequence from 'mongoose-sequence';
 
 const { Schema } = mongoose;
+const autoIncrement = mongooseSequence(mongoose);
 const { NODE_ENV } = config;
 
 //BROADCAST SCHEMA
 //  ============================================
 const broadcastSchema = new Schema(
   {
-    broadcastId: { type: String, required: true },
-    sessionId: { type: String, required: true },
-    archiveId: { type: String, required: true },
-    archiveOptions: {
-      sessionId: { type: String, required: true },
-      hasAudio: {
-        type: Boolean
-      },
-      hasVideo: {
-        type: Boolean
-      },
-      layout: {
-        type: {
-          type: String
-        },
-        stylesheet: {
-          type: String
-        },
-        screenshareType: {
-          type: String
-        }
-      },
-      name: { type: String, required: true },
-      outputMode: { type: String },
-      resolution: { type: String },
-      streamMode: { type: String }
-    },
+    title: { type: String, required: true },
     isActive: {
       type: Boolean,
       default: true
@@ -45,20 +21,15 @@ const broadcastSchema = new Schema(
   { timestamps: true }
 );
 
-// "layout" : {
-//   "type": "custom",
-//   "stylesheet": "the layout stylesheet (only used with type == custom)",
-//   "screenshareType": "the layout type to use when there is a screen-sharing stream (optional)"
-// },
-// "name" : "archive_name",
-// "outputMode" : "composed",
-// "resolution" : "640x480",
-// "streamMode" : "auto"
-
 /**
  * Set the autoCreate option on models if not on production
  */
 broadcastSchema.set('autoCreate', NODE_ENV !== 'production');
+
+/**
+ * Increments videoId everytime an instances is created
+ */
+broadcastSchema.plugin(autoIncrement, { inc_field: 'broadcastId' });
 
 /**
  * Create Broadcast model out of broadcastSchema

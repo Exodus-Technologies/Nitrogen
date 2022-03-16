@@ -25,6 +25,11 @@ const config = {
         useNewUrlParser: true,
         useUnifiedTopology: true
       }
+    },
+    bambuser: {
+      ios: process.env.BAMBUSER_APP_KEY_IOS,
+      android: process.env.BAMBUSER_APP_KEY_ANDROID,
+      web: process.env.BAMBUSER_APP_KEY_WEB
     }
   }
 };

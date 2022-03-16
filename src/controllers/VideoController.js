@@ -4,8 +4,8 @@ import { VideoService } from '../services';
 
 exports.uploadVideo = async (req, res, next) => {
   try {
-    const file = await VideoService.getPayloadFromRequest(req);
-    const response = await VideoService.uploadVideo(file);
+    const payload = await VideoService.getPayloadFromRequest(req);
+    const response = await VideoService.uploadVideo(payload);
     res.json(response);
   } catch (err) {
     console.log(`Error with uploading file to s3: `, err);
@@ -26,8 +26,8 @@ exports.getVideos = async (req, res, next) => {
 
 exports.updateViews = async (req, res, next) => {
   try {
-    const { videoName } = req.body;
-    const response = await VideoService.updateViews(videoName);
+    const { videoId } = req.body;
+    const response = await VideoService.updateViews(videoId);
     res.json(response);
   } catch (err) {
     console.log(`Error with uploading files to s3: `, err);
@@ -37,8 +37,8 @@ exports.updateViews = async (req, res, next) => {
 
 exports.updateVideo = async (req, res, next) => {
   try {
-    const file = await VideoService.getPayloadFromRequest(req);
-    const response = await VideoService.updateVideo(file);
+    const payload = await VideoService.getPayloadFromRequest(req);
+    const response = await VideoService.updateVideo(payload);
     res.json(response);
   } catch (err) {
     console.log(`Error with updating video in s3: `, err);

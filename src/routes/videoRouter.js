@@ -19,12 +19,7 @@ router.get(
   VideoController.getVideos
 );
 
-router.put(
-  '/video-service/updateVideo',
-  videoUpdateValidation,
-  validationHandler,
-  VideoController.updateVideo
-);
+router.put('/video-service/updateVideo', VideoController.updateVideo);
 
 router.put(
   '/video-service/updateViews',
