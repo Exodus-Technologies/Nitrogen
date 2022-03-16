@@ -13,4 +13,9 @@ router.get(
   BambuserController.getApplicationId
 );
 
+router.post(
+  '/video-service/webHookCallback',
+  BambuserController.webHookCallback
+);
+
 export default router;

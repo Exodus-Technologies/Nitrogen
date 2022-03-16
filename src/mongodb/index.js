@@ -21,10 +21,27 @@ export const getActiveBroadcast = async () => {
   }
 };
 
+export const getBroadcastById = async eventId => {
+  try {
+    const { Broadcast } = models;
+    const broadcast = await Broadcast.findOne({ eventId });
+    if (broadcast) {
+      return broadcast;
+    }
+  } catch (err) {
+    console.log('Error getting most latest active broadcast: ', err);
+  }
+};
+
 export const saveBroadcastToDb = async payload => {
   try {
     const { Broadcast } = models;
-    const broadcast = new Broadcast(payload);
+    const { collection } = payload;
+    const body = {
+      ...payload,
+      collectionType: collection
+    };
+    const broadcast = new Broadcast(body);
     await broadcast.save();
     if (broadcast) {
       return broadcast;
@@ -73,12 +90,17 @@ export const updateVideoViews = async videoId => {
   }
 };
 
-export const updateBroadcastInDB = async broadcastId => {
+export const updateBroadcastInDB = async payload => {
   try {
     const { Broadcast } = models;
+    const { broadcastId, collection, action } = payload;
     const filter = { broadcastId };
-    const options = { new: true };
-    const update = { isActive: false };
+    const options = { upsert: true };
+    const update = {
+      ...payload,
+      collectionType: collection,
+      ...(action === 'remove' && { isActive: false })
+    };
     await Broadcast.findOneAndUpdate(filter, update, options);
   } catch (err) {
     console.log('Error updating broadcast status: ', err);
