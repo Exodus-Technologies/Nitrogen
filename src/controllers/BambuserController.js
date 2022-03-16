@@ -12,3 +12,13 @@ exports.getApplicationId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.webHookCallback = async (req, res, next) => {
+  try {
+    const response = await BambuserService.webHookCallback(req.body);
+    res.json(response);
+  } catch (err) {
+    console.log(`Error with invoking webhook for broadcast details: `, err);
+    next(err);
+  }
+};
