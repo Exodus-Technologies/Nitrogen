@@ -16,7 +16,9 @@ exports.getApplicationId = async (req, res, next) => {
 exports.webHookCallback = async (req, res, next) => {
   try {
     const response = await BambuserService.webHookCallback(req.body);
-    res.json(response);
+    if (response.statusCode === 200) {
+      res.status(200).end();
+    }
   } catch (err) {
     console.log(`Error with invoking webhook for broadcast details: `, err);
     next(err);
