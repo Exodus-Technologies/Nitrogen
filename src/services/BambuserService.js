@@ -34,21 +34,31 @@ exports.webHookCallback = async payload => {
     const broadcast = await getBroadcastById(eventId);
     if (broadcast) {
       const updatedBroadcast = await updateBroadcastInDB(payload);
-      return {
-        statusCode: 200,
-        message: 'Broadcast metadata was updated success.',
-        broadcast: {
-          ...updatedBroadcast
-        }
-      };
+      if (updatedBroadcast) {
+        const { broadcastId, isActive } = updatedBroadcast;
+        return {
+          statusCode: 200,
+          message: 'Broadcast metadata was updated success.',
+          broadcast: {
+            broadcastId,
+            isActive
+          }
+        };
+      } else {
+        return badRequest(
+          `Unable to update broadcast data from the bambuser webhook.`
+        );
+      }
     } else {
       const savedBroadcast = await saveBroadcastToDb(payload);
       if (savedBroadcast) {
+        const { broadcastId, isActive } = savedBroadcast;
         return {
           statusCode: 200,
           message: 'Broadcast metadata was saved success.',
           broadcast: {
-            ...savedBroadcast
+            broadcastId,
+            isActive
           }
         };
       } else {
@@ -57,7 +67,7 @@ exports.webHookCallback = async payload => {
         );
       }
     }
-  } catch (error) {
+  } catch (err) {
     console.log(`Error executing webhook callback: `, err);
     return badImplementationRequest('Error executing webhook callback.');
   }

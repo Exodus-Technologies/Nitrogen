@@ -9,48 +9,6 @@ export const generateDBUri = () => {
   return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 };
 
-export const getActiveBroadcast = async () => {
-  try {
-    const { Broadcast } = models;
-    const broadcast = await Broadcast.findOne({ isActive: true });
-    if (broadcast) {
-      return broadcast;
-    }
-  } catch (err) {
-    console.log('Error getting most latest active broadcast: ', err);
-  }
-};
-
-export const getBroadcastById = async eventId => {
-  try {
-    const { Broadcast } = models;
-    const broadcast = await Broadcast.findOne({ eventId });
-    if (broadcast) {
-      return broadcast;
-    }
-  } catch (err) {
-    console.log('Error getting most latest active broadcast: ', err);
-  }
-};
-
-export const saveBroadcastToDb = async payload => {
-  try {
-    const { Broadcast } = models;
-    const { collection } = payload;
-    const body = {
-      ...payload,
-      collectionType: collection
-    };
-    const broadcast = new Broadcast(body);
-    await broadcast.save();
-    if (broadcast) {
-      return broadcast;
-    }
-  } catch (err) {
-    console.log('Error saving broadcast data to db: ', err);
-  }
-};
-
 export const saveVideoRefToDB = async payload => {
   try {
     const { Video } = models;
@@ -90,23 +48,6 @@ export const updateVideoViews = async videoId => {
   }
 };
 
-export const updateBroadcastInDB = async payload => {
-  try {
-    const { Broadcast } = models;
-    const { broadcastId, collection, action } = payload;
-    const filter = { broadcastId };
-    const options = { upsert: true };
-    const update = {
-      ...payload,
-      collectionType: collection,
-      ...(action === 'remove' && { isActive: false })
-    };
-    await Broadcast.findOneAndUpdate(filter, update, options);
-  } catch (err) {
-    console.log('Error updating broadcast status: ', err);
-  }
-};
-
 export const getVideoByTitle = async title => {
   const { Video } = models;
   const video = await Video.findOne({ title });
@@ -117,4 +58,58 @@ export const getVideoById = async videoId => {
   const { Video } = models;
   const video = await Video.findOne({ videoId });
   return video;
+};
+
+export const updateBroadcastInDB = async payload => {
+  try {
+    const { Broadcast } = models;
+    const { eventId, collection, action } = payload;
+    const filter = { eventId };
+    const options = { new: true };
+    const update = {
+      ...payload,
+      ...(collection && { collectionType: collection }),
+      ...(action === 'remove' && { isActive: false })
+    };
+    const broadcast = await Broadcast.findOneAndUpdate(filter, update, options);
+    return broadcast;
+  } catch (err) {
+    console.log('Error updating broadcast status: ', err);
+  }
+};
+
+export const getActiveBroadcast = async () => {
+  try {
+    const { Broadcast } = models;
+    const broadcast = await Broadcast.findOne({ isActive: true });
+    return broadcast;
+  } catch (err) {
+    console.log('Error getting most latest active broadcast: ', err);
+  }
+};
+
+export const getBroadcastById = async eventId => {
+  try {
+    const { Broadcast } = models;
+    const broadcast = await Broadcast.findOne({ eventId });
+    return broadcast;
+  } catch (err) {
+    console.log('Error getting broadcast by id: ', err);
+  }
+};
+
+export const saveBroadcastToDb = async payload => {
+  try {
+    const { Broadcast } = models;
+    const { collection } = payload;
+    const body = {
+      ...payload,
+      collectionType: collection
+    };
+    const broadcast = new Broadcast(body);
+    await broadcast.save();
+    return broadcast;
+  } catch (err) {
+    console.log('Error saving broadcast data to db: ', err);
+  }
 };
