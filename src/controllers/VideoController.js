@@ -13,6 +13,17 @@ exports.uploadVideo = async (req, res, next) => {
   }
 };
 
+exports.getVideo = async (req, res, next) => {
+  try {
+    const { videoId } = req.params;
+    const response = await VideoService.getVideo(videoId);
+    res.json(response);
+  } catch (err) {
+    console.log(`Error with getting video by id: ${videoId}: `, err);
+    next(err);
+  }
+};
+
 exports.getVideos = async (req, res, next) => {
   try {
     const { query } = req;
@@ -41,7 +52,7 @@ exports.updateVideo = async (req, res, next) => {
     const response = await VideoService.updateVideo(payload);
     res.json(response);
   } catch (err) {
-    console.log(`Error with updating video in s3: `, err);
+    console.log(`Error with updating video: `, err);
     next(err);
   }
 };

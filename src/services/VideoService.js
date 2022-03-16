@@ -111,6 +111,23 @@ exports.getVideos = async query => {
   }
 };
 
+exports.getVideo = async videoId => {
+  try {
+    const video = await getVideoById(videoId);
+    if (video) {
+      return {
+        statusCode: 200,
+        video
+      };
+    } else {
+      return badRequest(`No video found with id provided.`);
+    }
+  } catch (err) {
+    console.log('Error getting video by id ', err);
+    return badImplementationRequest('Error getting video by id.');
+  }
+};
+
 exports.updateViews = async videoId => {
   try {
     const videoViews = await updateVideoViews(videoId);
@@ -169,6 +186,7 @@ exports.updateVideo = async archive => {
         };
       }
     } else {
+      return badRequest(`No video found to update.`);
     }
   } catch (err) {
     console.log(`Error updating video metadata: `, err);

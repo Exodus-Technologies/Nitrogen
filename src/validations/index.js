@@ -5,51 +5,6 @@
  */
 import { body, query, validationResult } from 'express-validator';
 
-const startBroadcastValidation = [
-  body('sessionId')
-    .isString()
-    .withMessage('Must provide an existing and valid sessionId'),
-  body('hasAudio')
-    .isBoolean()
-    .withMessage('Must provide a boolean setting for audio')
-    .optional(),
-  body('hasVideo')
-    .isBoolean()
-    .withMessage('Must provide a boolean setting for video')
-    .optional(),
-  body('laylout')
-    .isObject()
-    .not()
-    .isEmpty()
-    .withMessage('Must provide a valid layout object')
-    .optional(),
-  body('laylout.type')
-    .isString()
-    .withMessage('Must provide a valid layout type')
-    .optional(),
-  body('laylout.stylesheet')
-    .isString()
-    .withMessage('Must provide a valid layout stylesheet')
-    .optional(),
-  body('laylout.screenshareType')
-    .isString()
-    .withMessage('Must provide a valid layout screenshareType')
-    .optional(),
-  body('name').isString().withMessage('Must provide a name for the archive'),
-  body('outputMode')
-    .isString()
-    .withMessage('Must provide a string setting for video outputMode')
-    .optional(),
-  body('resolution')
-    .isString()
-    .withMessage('Must provide a string setting for video resolution')
-    .optional(),
-  body('streamMode')
-    .isString()
-    .withMessage('Must provide a string setting for video streamMode')
-    .optional()
-];
-
 const videoQueryValidation = [
   query('limit')
     .isString()
@@ -66,8 +21,8 @@ const videoQueryValidation = [
     .isString()
     .withMessage('Must provide a valid video author')
     .optional(),
-  query('status')
-    .isString()
+  body('paid')
+    .isBoolean()
     .withMessage('Must provide a valid status for paid vs free videos')
     .optional()
 ];
@@ -97,7 +52,6 @@ const videoViewsUpdateValidation = [
 
 export {
   validationResult,
-  startBroadcastValidation,
   videoQueryValidation,
   videoUpdateValidation,
   appIdQueryValidation,
