@@ -50,10 +50,6 @@ const videoViewsUpdateValidation = [
   body('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
-const bambsterBroadcastValidation = [
-  body('eventId').isString().withMessage('Must provide a valid eventId.')
-];
-
 const videoIdUpdateValidation = [
   param('videoId').isString().withMessage('Must provide a existing video id.')
 ];
@@ -64,6 +60,5 @@ export {
   videoUpdateValidation,
   appIdQueryValidation,
   videoViewsUpdateValidation,
-  bambsterBroadcastValidation,
   videoIdUpdateValidation
 };
