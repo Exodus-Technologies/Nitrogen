@@ -5,7 +5,7 @@ import { badImplementationRequest, badRequest } from '../response-codes';
 import {
   saveBroadcastToDb,
   updateBroadcastInDB,
-  getBroadcastById
+  getActiveBroadcast
 } from '../mongodb';
 
 const { platfromKeys } = config.sources.bambuser;
@@ -30,8 +30,7 @@ exports.getApplicationId = async query => {
 
 exports.webHookCallback = async payload => {
   try {
-    const { eventId } = payload;
-    const broadcast = await getBroadcastById(eventId);
+    const broadcast = await getActiveBroadcast();
     if (broadcast) {
       const updatedBroadcast = await updateBroadcastInDB(payload);
       if (updatedBroadcast) {
