@@ -9,7 +9,12 @@ import cors from 'cors';
 import responseTime from 'response-time';
 
 import { requestResponse, errorHandler } from './utils';
-import { appRouter, videoRouter, bambuserRouter } from './routes';
+import {
+  appRouter,
+  videoRouter,
+  bambuserRouter,
+  broadcastRouter
+} from './routes';
 
 // Create the Express application object
 const server = express();
@@ -58,6 +63,10 @@ console.log('Loaded server routes middleware.');
 //Video middleware
 server.use(videoRouter);
 console.log('Loaded video routes middleware.');
+
+//Broadcast middleware
+server.use(broadcastRouter);
+console.log('Loaded broadcast routes middleware.');
 
 //Bambuser middleware
 server.use(bambuserRouter);
