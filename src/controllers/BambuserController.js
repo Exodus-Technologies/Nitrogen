@@ -17,7 +17,7 @@ exports.webHookCallback = async (req, res, next) => {
   try {
     const { eventId, action } = req.body;
     if (eventId) {
-      if (action && action !== 'remove') {
+      if (action !== 'remove') {
         const response = await BambuserService.webHookCallback(req.body);
         if (response.statusCode === 200) {
           res.status(200).end();
