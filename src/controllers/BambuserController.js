@@ -15,6 +15,10 @@ exports.getApplicationId = async (req, res, next) => {
 
 exports.webHookCallback = async (req, res, next) => {
   try {
+    const { eventId } = req.body;
+    if (!eventId) {
+      next();
+    }
     const response = await BambuserService.webHookCallback(req.body);
     if (response.statusCode === 200) {
       res.status(200).send('OK');

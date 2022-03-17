@@ -3,7 +3,7 @@
 /**
  * https://github.com/validatorjs/validator.js#validators
  */
-import { body, query, validationResult } from 'express-validator';
+import { body, query, param, validationResult } from 'express-validator';
 
 const videoQueryValidation = [
   query('limit')
@@ -50,8 +50,8 @@ const videoViewsUpdateValidation = [
   body('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
-const bambsterBroadcastValidation = [
-  body('eventId').isString().withMessage('Must provide a valid eventId.')
+const videoIdUpdateValidation = [
+  param('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
 export {
@@ -60,5 +60,5 @@ export {
   videoUpdateValidation,
   appIdQueryValidation,
   videoViewsUpdateValidation,
-  bambsterBroadcastValidation
+  videoIdUpdateValidation
 };

@@ -1,6 +1,7 @@
 import express from 'express';
 import { VideoController } from '../controllers';
 import {
+  videoIdUpdateValidation,
   videoQueryValidation,
   videoViewsUpdateValidation
 } from '../validations';
@@ -18,7 +19,12 @@ router.get(
   VideoController.getVideos
 );
 
-router.get('/video-service/getVideo/:videoId', VideoController.getVideo);
+router.get(
+  '/video-service/getVideo/:videoId',
+  videoIdUpdateValidation,
+  validationHandler,
+  VideoController.getVideo
+);
 
 router.put('/video-service/updateVideo', VideoController.updateVideo);
 

@@ -27,7 +27,6 @@
     "@babel/core": "^7.17.2",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.0",
-    "bcrypt": "^5.0.1",
     "compression": "^1.7.4",
     "core-js": "^3.21.0",
     "cors": "^2.8.5",
@@ -38,7 +37,6 @@
     "mongoose": "^6.2.1",
     "mongoose-sequence": "^5.3.1",
     "nocache": "^3.0.1",
-    "opentok": "^2.13.0",
     "regenerator-runtime": "^0.13.9",
     "response-time": "^2.3.2"
   },
