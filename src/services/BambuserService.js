@@ -45,6 +45,9 @@ exports.webHookCallback = async payload => {
           }
         };
       } else {
+        console.log(
+          `Unable to update broadcast data from the bambuser webhook.`
+        );
         return badRequest(
           `Unable to update broadcast data from the bambuser webhook.`
         );
@@ -62,6 +65,7 @@ exports.webHookCallback = async payload => {
           }
         };
       } else {
+        console.log(`Unable to save broadcast data from the bambuser webhook.`);
         return badRequest(
           `Unable to save broadcast data from the bambuser webhook.`
         );

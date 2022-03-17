@@ -73,15 +73,6 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - BAMBUSER_DAID (bambuser daid)
 - BAMBUSER_DASECRET (bambuser dasecret)
 
-# API Definition
-
-Nitrogen utilizes Swagger and OpenAPI 3.0.3 Specification [https://swagger.io/specification/] for
-documentation of APIs.
-
-    ${HOST}:${PORT}/video-service/swagger/docs
-
-Navigate to link above to see API Definitions.
-
 # Running the project (development mode)
 
 Nitrogen utilizes nodemon [https://www.npmjs.com/package/nodemon] auto-restart of server after

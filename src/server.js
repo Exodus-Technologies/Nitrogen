@@ -10,7 +10,6 @@ import responseTime from 'response-time';
 
 import { requestResponse, errorHandler } from './utils';
 import { appRouter, videoRouter, bambuserRouter } from './routes';
-import swagger from './swagger';
 
 // Create the Express application object
 const server = express();
@@ -63,9 +62,5 @@ console.log('Loaded video routes middleware.');
 //Bambuser middleware
 server.use(bambuserRouter);
 console.log('Loaded bambuser routes middleware.');
-
-//Swagger middleware
-server.use(swagger);
-console.log('Loaded swagger documentation middleware.');
 
 export default http.createServer(server);

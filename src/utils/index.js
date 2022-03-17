@@ -1,7 +1,6 @@
 'use strict';
 
 import { validationResult } from '../validations';
-import config from '../config';
 
 const requestResponse = (req, res, next) => {
   console.info(`${req.method} ${req.originalUrl}`);
@@ -28,9 +27,4 @@ const validationHandler = (req, res, next) => {
   next();
 };
 
-const generateDBUri = () => {
-  const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
-  return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
-};
-
-export { requestResponse, errorHandler, validationHandler, generateDBUri };
+export { requestResponse, errorHandler, validationHandler };

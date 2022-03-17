@@ -40,9 +40,7 @@
     "nocache": "^3.0.1",
     "opentok": "^2.13.0",
     "regenerator-runtime": "^0.13.9",
-    "response-time": "^2.3.2",
-    "swagger-jsdoc": "^6.1.0",
-    "swagger-ui-express": "^4.3.0"
+    "response-time": "^2.3.2"
   },
   "devDependencies": {
     "dotenv": "^16.0.0",
