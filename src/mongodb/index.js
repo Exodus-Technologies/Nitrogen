@@ -60,12 +60,12 @@ export const getVideoById = async videoId => {
   return video;
 };
 
-export const updateBroadcastInDB = async livestream => {
+export const updateBroadcastInDB = async (broadcastId, livestream) => {
   try {
     const { Broadcast } = models;
-    const { eventId, collection, payload } = livestream;
+    const { collection, payload } = livestream;
     const { type } = payload;
-    const filter = { eventId };
+    const filter = { broadcastId };
     const options = { new: true };
     const update = {
       ...payload,

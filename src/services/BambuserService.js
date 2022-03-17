@@ -32,7 +32,8 @@ exports.webHookCallback = async payload => {
   try {
     const broadcast = await getActiveBroadcast();
     if (broadcast) {
-      const updatedBroadcast = await updateBroadcastInDB(payload);
+      const { broadcastId } = broadcast;
+      const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
       if (updatedBroadcast) {
         const { broadcastId, isActive } = updatedBroadcast;
         return {
