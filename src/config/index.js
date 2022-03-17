@@ -18,8 +18,6 @@ const config = {
       dbName: process.env.DB_NAME,
       dbUser: process.env.DB_USER,
       dbPass: process.env.DB_PASS,
-      broadcastCollectionName: process.env.BROADCAST_COLLECTION_NAME,
-      videoCollectionName: process.env.VIDEO_COLLECTION_NAME,
       options: {
         useNewUrlParser: true,
         useUnifiedTopology: true
