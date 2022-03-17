@@ -17,12 +17,11 @@ exports.webHookCallback = async (req, res, next) => {
   try {
     const { eventId, action } = req.body;
     if (eventId) {
-      if (action && action === 'remove') {
-        res.status(200).end();
-      }
-      const response = await BambuserService.webHookCallback(req.body);
-      if (response.statusCode === 200) {
-        res.status(200).end();
+      if (action && action !== 'remove') {
+        const response = await BambuserService.webHookCallback(req.body);
+        if (response.statusCode === 200) {
+          res.status(200).end();
+        }
       }
     }
     res.status(200).end();
