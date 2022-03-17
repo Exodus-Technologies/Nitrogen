@@ -15,12 +15,14 @@ exports.getApplicationId = async (req, res, next) => {
 
 exports.webHookCallback = async (req, res, next) => {
   try {
-    const { eventId } = req.body;
+    const { eventId, action } = req.body;
     if (eventId) {
       const response = await BambuserService.webHookCallback(req.body);
       if (response.statusCode === 200) {
         res.status(200).end();
       }
+    } else if (eventId && action && action === 'remove') {
+      res.status(200).end();
     }
     res.status(200).end();
   } catch (err) {
