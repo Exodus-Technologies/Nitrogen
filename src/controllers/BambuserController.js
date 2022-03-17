@@ -17,7 +17,7 @@ exports.webHookCallback = async (req, res, next) => {
   try {
     const response = await BambuserService.webHookCallback(req.body);
     if (response.statusCode === 200) {
-      res.status(200).end();
+      res.status(200).send('OK');
     }
   } catch (err) {
     console.log(`Error with invoking webhook for broadcast details: `, err);

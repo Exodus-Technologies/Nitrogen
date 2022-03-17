@@ -3,7 +3,7 @@
 import server from './server';
 import config from './config';
 import models from './models';
-import { generateDBUri } from './utils';
+import { generateDBUri } from './mongodb';
 
 /**
  * Start web server
