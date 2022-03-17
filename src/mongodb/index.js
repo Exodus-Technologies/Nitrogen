@@ -68,9 +68,9 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     const filter = { broadcastId };
     const options = { new: true };
     const update = {
-      ...payload,
+      ...livestream,
       ...(collection && { collectionType: collection }),
-      ...(type === 'archive' && { isActive: false })
+      ...(type === 'archived' && { isActive: false })
     };
     const broadcast = await Broadcast.findOneAndUpdate(filter, update, options);
     return broadcast;
