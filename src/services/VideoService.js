@@ -8,23 +8,24 @@ import {
   doesS3ObjectExist,
   deleteVideoByKey
 } from '../aws';
-import models from '../models';
 import {
   saveVideoRefToDB,
   updateVideoViews,
   getVideoById,
   getVideoByTitle,
-  updateVideo
+  updateVideo,
+  getVideos
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
-
-const { Video } = models;
-const queryOps = { __v: 0, _id: 0 };
 
 const form = formidable({ multiples: true });
 
 function isEmpty(obj) {
   return Object.keys(obj).length === 0;
+}
+
+function doesValueHaveSpaces(str) {
+  return !/\s/.test(str);
 }
 
 exports.getPayloadFromRequest = async req => {
@@ -47,6 +48,9 @@ exports.getPayloadFromRequest = async req => {
 exports.uploadVideo = async archive => {
   try {
     const { title, author } = archive;
+    if (doesValueHaveSpaces(title)) {
+      return badRequest('Title of video must not have spaces.');
+    }
     const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
@@ -96,7 +100,7 @@ exports.uploadVideo = async archive => {
 
 exports.getVideos = async query => {
   try {
-    const videos = await Video.find(query, queryOps);
+    const videos = await getVideos(query);
     if (videos.length) {
       return {
         statusCode: 200,
@@ -148,6 +152,9 @@ exports.updateViews = async videoId => {
 exports.updateVideo = async archive => {
   try {
     const { title, filepath, videoId } = archive;
+    if (doesValueHaveSpaces(title)) {
+      return badRequest('Title of video must not have spaces.');
+    }
     const video = await getVideoById(videoId);
     if (video) {
       if (filepath) {

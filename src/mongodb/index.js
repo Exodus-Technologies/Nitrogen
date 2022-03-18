@@ -9,6 +9,8 @@ export const generateDBUri = () => {
   return `mongodb+srv://${dbUser}:${dbPass}@${clusterName}.ybdno.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 };
 
+const queryOps = { __v: 0, _id: 0 };
+
 export const saveVideoRefToDB = async payload => {
   try {
     const { Video } = models;
@@ -58,6 +60,12 @@ export const getVideoById = async videoId => {
   const { Video } = models;
   const video = await Video.findOne({ videoId });
   return video;
+};
+
+export const getVideos = async query => {
+  const { Video } = models;
+  const videos = await Video.find(query, queryOps);
+  return videos;
 };
 
 export const updateBroadcastInDB = async (broadcastId, livestream) => {
