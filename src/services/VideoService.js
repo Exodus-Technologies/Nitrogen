@@ -186,7 +186,7 @@ exports.updateVideo = async archive => {
         };
       }
     } else {
-      return badRequest(`No video found to update.`);
+      return badRequest(`No videoId was passed to update video.`);
     }
   } catch (err) {
     console.log(`Error updating video metadata: `, err);
