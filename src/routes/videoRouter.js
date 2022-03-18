@@ -3,6 +3,7 @@ import { VideoController } from '../controllers';
 import {
   videoIdUpdateValidation,
   videoQueryValidation,
+  videoUpdateValidation,
   videoViewsUpdateValidation
 } from '../validations';
 import { validationHandler } from '../utils';
@@ -26,7 +27,12 @@ router.get(
   VideoController.getVideo
 );
 
-router.put('/video-service/updateVideo', VideoController.updateVideo);
+router.put(
+  '/video-service/updateVideo',
+  videoUpdateValidation,
+  validationHandler,
+  VideoController.updateVideo
+);
 
 router.put(
   '/video-service/updateViews',

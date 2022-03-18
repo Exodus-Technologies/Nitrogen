@@ -34,6 +34,7 @@ const appIdQueryValidation = [
 const videoUpdateValidation = [
   body('title')
     .isString()
+    .custom(value => !/\s/.test(value))
     .withMessage('Must provide a new video title')
     .optional(),
   body('author')
