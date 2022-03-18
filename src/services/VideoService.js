@@ -25,7 +25,7 @@ function isEmpty(obj) {
 }
 
 function doesValueHaveSpaces(str) {
-  return !/\s/.test(str);
+  return /\s/.test(str);
 }
 
 exports.getPayloadFromRequest = async req => {
