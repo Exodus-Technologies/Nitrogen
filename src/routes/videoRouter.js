@@ -1,6 +1,7 @@
 import express from 'express';
 import { VideoController } from '../controllers';
 import {
+  videoCreateValidation,
   videoIdUpdateValidation,
   videoQueryValidation,
   videoUpdateValidation,
@@ -11,7 +12,12 @@ import { validationHandler } from '../utils';
 const { Router } = express;
 const router = Router();
 
-router.post('/video-service/uploadVideo', VideoController.uploadVideo);
+router.post(
+  '/video-service/uploadVideo',
+  videoCreateValidation,
+  validationHandler,
+  VideoController.uploadVideo
+);
 
 router.get(
   '/video-service/getVideos',

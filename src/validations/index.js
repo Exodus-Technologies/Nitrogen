@@ -31,6 +31,22 @@ const appIdQueryValidation = [
   query('platform').isString().withMessage('Must provide a device platform.')
 ];
 
+const videoCreateValidation = [
+  body('title')
+    .isString()
+    .custom(value => !/\s/.test(value))
+    .withMessage('Must provide a new video title'),
+  body('author').isString().withMessage('Must provide a valid video author'),
+  body('url').isString().withMessage('Must provide a valid url from s3'),
+  body('description')
+    .isString()
+    .isLength({ min: 5, max: 255 })
+    .withMessage('Must provide a description for the video'),
+  body('paid')
+    .isBoolean()
+    .withMessage('Must provide a valid status for paid vs free videos')
+];
+
 const videoUpdateValidation = [
   body('title')
     .isString()
@@ -40,6 +56,15 @@ const videoUpdateValidation = [
   body('author')
     .isString()
     .withMessage('Must provide a valid video author')
+    .optional(),
+  body('url')
+    .isString()
+    .withMessage('Must provide a valid url from s3')
+    .optional(),
+  body('description')
+    .isString()
+    .isLength({ min: 5, max: 255 })
+    .withMessage('Must provide a description for the video')
     .optional(),
   body('paid')
     .isBoolean()
@@ -61,5 +86,6 @@ export {
   videoUpdateValidation,
   appIdQueryValidation,
   videoViewsUpdateValidation,
-  videoIdUpdateValidation
+  videoIdUpdateValidation,
+  videoCreateValidation
 };

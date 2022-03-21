@@ -15,6 +15,7 @@ const videoSchema = new Schema(
     title: { type: String, required: true },
     broadcastId: { type: String },
     url: { type: String, required: true },
+    description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
     author: { type: String, required: true },
     paid: {
