@@ -145,7 +145,7 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, filepath, videoId } = archive;
+    const { title, filepath, videoId, description, author } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of video must not have spaces.');
     }
@@ -160,7 +160,10 @@ exports.updateVideo = async archive => {
           }
           const s3Location = await uploadArchiveToS3Location(archive);
           const body = {
-            ...archive,
+            title,
+            videoId,
+            description,
+            author,
             url: s3Location
           };
           await updateVideo(body);
@@ -169,15 +172,23 @@ exports.updateVideo = async archive => {
             {
               message: 'Video uploaded to s3 with success',
               video: {
-                ...archive,
+                title,
+                videoId,
+                description,
+                author,
                 url: s3Location
               }
             }
           ];
         }
       } else {
+        const url = await getObjectUrlFromS3(title);
         const body = {
-          ...archive
+          title,
+          videoId,
+          description,
+          author,
+          url
         };
         await updateVideo(body);
         return [
@@ -185,7 +196,11 @@ exports.updateVideo = async archive => {
           {
             message: 'Video updated with success.',
             video: {
-              ...archive
+              title,
+              issueId,
+              description,
+              author,
+              url
             }
           }
         ];
