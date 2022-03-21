@@ -30,7 +30,7 @@ exports.getVideos = async (req, res, next) => {
     const [statusCode, payload] = await VideoService.getVideos(query);
     res.status(statusCode).send(payload);
   } catch (err) {
-    console.log(`Error with uploading files to s3: `, err);
+    console.log(`Error with getting vidoes: `, err);
     next(err);
   }
 };
@@ -41,7 +41,7 @@ exports.updateViews = async (req, res, next) => {
     const [statusCode, payload] = await VideoService.updateViews(videoId);
     res.status(statusCode).send(payload);
   } catch (err) {
-    console.log(`Error with uploading files to s3: `, err);
+    console.log(`Error with updating views for issue: `, err);
     next(err);
   }
 };
