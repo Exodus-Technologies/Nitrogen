@@ -5,8 +5,10 @@ import { BambuserService } from '../services';
 exports.getApplicationId = async (req, res, next) => {
   try {
     const { query } = req;
-    const response = await BambuserService.getApplicationId(query);
-    res.status(response.statusCode).send(response);
+    const [statusCode, response] = await BambuserService.getApplicationId(
+      query
+    );
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with retrieving application id: `, err);
     next(err);
@@ -18,8 +20,8 @@ exports.webHookCallback = async (req, res, next) => {
     const { eventId, action } = req.body;
     if (eventId) {
       if (action !== 'remove') {
-        const response = await BambuserService.webHookCallback(req.body);
-        if (response.statusCode === 200) {
+        const [statusCode] = await BambuserService.webHookCallback(req.body);
+        if (statusCode === 200) {
           res.status(200).end();
         }
       }

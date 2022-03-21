@@ -15,11 +15,13 @@ exports.getApplicationId = async query => {
     const { platform } = query;
     const applicationId = platfromKeys[platform];
     if (applicationId) {
-      return {
-        statusCode: 200,
-        message: 'Retrieved application id with success.',
-        applicationId
-      };
+      return [
+        200,
+        {
+          message: 'Retrieved application id with success.',
+          applicationId
+        }
+      ];
     }
     return badRequest(`No application ids found with platform: '${platform}.'`);
   } catch (err) {
@@ -36,14 +38,16 @@ exports.webHookCallback = async payload => {
       const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
       if (updatedBroadcast) {
         const { broadcastId, isActive } = updatedBroadcast;
-        return {
-          statusCode: 200,
-          message: 'Broadcast metadata was updated success.',
-          broadcast: {
-            broadcastId,
-            isActive
+        return [
+          200,
+          {
+            message: 'Broadcast metadata was updated success.',
+            broadcast: {
+              broadcastId,
+              isActive
+            }
           }
-        };
+        ];
       } else {
         console.log(
           `Unable to update broadcast data from the bambuser webhook.`
@@ -56,14 +60,16 @@ exports.webHookCallback = async payload => {
       const savedBroadcast = await saveBroadcastToDb(payload);
       if (savedBroadcast) {
         const { broadcastId, isActive } = savedBroadcast;
-        return {
-          statusCode: 200,
-          message: 'Broadcast metadata was saved success.',
-          broadcast: {
-            broadcastId,
-            isActive
+        return [
+          200,
+          {
+            message: 'Broadcast metadata was saved with success.',
+            broadcast: {
+              broadcastId,
+              isActive
+            }
           }
-        };
+        ];
       } else {
         console.log(`Unable to save broadcast data from the bambuser webhook.`);
         return badRequest(
