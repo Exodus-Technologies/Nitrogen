@@ -21,7 +21,7 @@ const videoQueryValidation = [
     .isString()
     .withMessage('Must provide a valid video author')
     .optional(),
-  body('paid')
+  query('paid')
     .isBoolean()
     .withMessage('Must provide a valid status for paid vs free videos')
     .optional()
@@ -58,7 +58,7 @@ const videoUpdateValidation = [
     .optional(),
   body('description')
     .isString()
-    .isLength({ min: 5, max: 255 })
+    .isLength({ max: 255 })
     .withMessage('Must provide a description for the video')
     .optional(),
   body('paid')
