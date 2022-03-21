@@ -37,7 +37,6 @@ const videoCreateValidation = [
     .custom(value => !/\s/.test(value))
     .withMessage('Must provide a new video title'),
   body('author').isString().withMessage('Must provide a valid video author'),
-  body('url').isString().withMessage('Must provide a valid url from s3'),
   body('description')
     .isString()
     .isLength({ min: 5, max: 255 })
@@ -56,10 +55,6 @@ const videoUpdateValidation = [
   body('author')
     .isString()
     .withMessage('Must provide a valid video author')
-    .optional(),
-  body('url')
-    .isString()
-    .withMessage('Must provide a valid url from s3')
     .optional(),
   body('description')
     .isString()
