@@ -47,7 +47,10 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author } = archive;
+    const { title, author, filepath } = archive;
+    if (!filepath) {
+      return badRequest('File must be provided to upload.');
+    }
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of video must not have spaces.');
     }

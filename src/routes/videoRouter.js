@@ -1,10 +1,8 @@
 import express from 'express';
 import { VideoController } from '../controllers';
 import {
-  videoCreateValidation,
   videoIdUpdateValidation,
   videoQueryValidation,
-  videoUpdateValidation,
   videoViewsUpdateValidation
 } from '../validations';
 import { validationHandler } from '../utils';
@@ -12,12 +10,7 @@ import { validationHandler } from '../utils';
 const { Router } = express;
 const router = Router();
 
-router.post(
-  '/video-service/uploadVideo',
-  videoCreateValidation,
-  validationHandler,
-  VideoController.uploadVideo
-);
+router.post('/video-service/uploadVideo', VideoController.uploadVideo);
 
 router.get(
   '/video-service/getVideos',
@@ -33,12 +26,7 @@ router.get(
   VideoController.getVideo
 );
 
-router.put(
-  '/video-service/updateVideo',
-  videoUpdateValidation,
-  validationHandler,
-  VideoController.updateVideo
-);
+router.put('/video-service/updateVideo', VideoController.updateVideo);
 
 router.put(
   '/video-service/updateViews',
