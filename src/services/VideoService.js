@@ -66,11 +66,10 @@ exports.uploadVideo = async archive => {
           url: s3Location
         };
         const savedVideo = await saveVideoRefToDB(body);
-        return {
-          statusCode: 200,
-          message: 'Video uploaded to s3 with success',
-          video: savedVideo
-        };
+        return [
+          200,
+          { message: 'Video uploaded to s3 with success', video: savedVideo }
+        ];
       } else {
         await createS3Bucket();
         const isBucketAvaiable = await doesS3BucketExist();
@@ -82,11 +81,10 @@ exports.uploadVideo = async archive => {
             url: s3Location
           };
           const savedVideo = await saveVideoRefToDB(body);
-          return {
-            statusCode: 200,
-            message: 'Video uploaded to s3 with success',
-            video: savedVideo
-          };
+          return [
+            200,
+            { message: 'Video uploaded to s3 with success', video: savedVideo }
+          ];
         } else {
           return badRequest('Unable to create s3 bucket.');
         }
@@ -101,11 +99,8 @@ exports.uploadVideo = async archive => {
 exports.getVideos = async query => {
   try {
     const videos = await getVideos(query);
-    if (videos.length) {
-      return {
-        statusCode: 200,
-        items: videos
-      };
+    if (videos) {
+      return [200, { items: videos }];
     } else {
       return badRequest(`No videos found with selected query params.`);
     }
@@ -119,10 +114,7 @@ exports.getVideo = async videoId => {
   try {
     const video = await getVideoById(videoId);
     if (video) {
-      return {
-        statusCode: 200,
-        video
-      };
+      return [200, { video }];
     } else {
       return badRequest(`No video found with id provided.`);
     }
@@ -136,11 +128,10 @@ exports.updateViews = async videoId => {
   try {
     const videoViews = await updateVideoViews(videoId);
     if (videoViews) {
-      return {
-        statusCode: 200,
-        message: `${videoId} has ${videoViews} views.`,
-        views: videoViews
-      };
+      return [
+        200,
+        { message: `${videoId} has ${videoViews} views.`, views: videoViews }
+      ];
     }
     return badRequest(`No videos found to update clicks.`);
   } catch (err) {
@@ -170,27 +161,31 @@ exports.updateVideo = async archive => {
             url: s3Location
           };
           await updateVideo(body);
-          return {
-            statusCode: 200,
-            message: 'Video uploaded to s3 with success',
-            video: {
-              ...archive,
-              url: s3Location
+          return [
+            200,
+            {
+              message: 'Video uploaded to s3 with success',
+              video: {
+                ...archive,
+                url: s3Location
+              }
             }
-          };
+          ];
         }
       } else {
         const body = {
           ...archive
         };
         await updateVideo(body);
-        return {
-          statusCode: 200,
-          message: 'Video updated with success.',
-          video: {
-            ...archive
+        return [
+          200,
+          {
+            message: 'Video updated with success.',
+            video: {
+              ...archive
+            }
           }
-        };
+        ];
       }
     } else {
       return badRequest(`No videoId was passed to update video.`);

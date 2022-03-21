@@ -7,10 +7,7 @@ exports.getActiveBroadcast = async () => {
   try {
     const broadcast = await getActiveBroadcast();
     if (broadcast) {
-      return {
-        statusCode: 200,
-        broadcast
-      };
+      return [200, broadcast];
     } else {
       return badRequest(`No active broadcast avaiable.`);
     }
