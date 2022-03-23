@@ -177,7 +177,7 @@ exports.updateVideo = async archive => {
         return [
           200,
           {
-            message: 'Video uploaded to s3 with success',
+            message: 'Video updated to s3 with success',
             video: {
               title,
               videoId,
