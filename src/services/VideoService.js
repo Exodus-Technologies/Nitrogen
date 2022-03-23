@@ -154,6 +154,11 @@ exports.updateVideo = async archive => {
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of video must not have spaces.');
     }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
+    }
     const video = await getVideoById(videoId);
     if (video) {
       if (title !== video.title) {
