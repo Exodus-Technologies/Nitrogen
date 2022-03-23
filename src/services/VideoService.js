@@ -6,7 +6,9 @@ import {
   doesS3BucketExist,
   createS3Bucket,
   doesS3ObjectExist,
-  deleteVideoByKey
+  deleteVideoByKey,
+  copyS3Object,
+  getObjectUrlFromS3
 } from '../aws';
 import {
   saveVideoRefToDB,
@@ -14,6 +16,7 @@ import {
   getVideoById,
   getVideoByTitle,
   updateVideo,
+  deleteVideoById,
   getVideos
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
@@ -34,12 +37,12 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const { title, author, videoId, paid } = fields;
+      const file = { ...fields };
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
-        resolve({ filepath, title, author, videoId, paid });
+        resolve({ ...file, filepath });
       } else {
-        resolve({ title, author, videoId, paid });
+        resolve(file);
       }
     });
   });
@@ -47,7 +50,7 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, filepath } = archive;
+    const { title, author, filepath, description } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
     }
@@ -66,6 +69,7 @@ exports.uploadVideo = async archive => {
         const body = {
           title,
           author,
+          description,
           url: s3Location
         };
         const savedVideo = await saveVideoRefToDB(body);
@@ -81,6 +85,7 @@ exports.uploadVideo = async archive => {
           const body = {
             title,
             author,
+            description,
             url: s3Location
           };
           const savedVideo = await saveVideoRefToDB(body);
@@ -145,12 +150,45 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, filepath, videoId, description, author } = archive;
+    const { title, filepath, videoId, description, author, paid } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of video must not have spaces.');
     }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
+    }
     const video = await getVideoById(videoId);
     if (video) {
+      if (title !== video.title) {
+        await copyS3Object(video.title, title);
+        const s3Location = getObjectUrlFromS3(title);
+        const body = {
+          title,
+          videoId,
+          description,
+          author,
+          paid,
+          url: s3Location
+        };
+        await updateVideo(body);
+        await deleteVideoByKey(video.title);
+        return [
+          200,
+          {
+            message: 'Video updated to s3 with success',
+            video: {
+              title,
+              videoId,
+              description,
+              author,
+              paid,
+              url: s3Location
+            }
+          }
+        ];
+      }
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
@@ -164,6 +202,7 @@ exports.updateVideo = async archive => {
             videoId,
             description,
             author,
+            paid,
             url: s3Location
           };
           await updateVideo(body);
@@ -176,6 +215,7 @@ exports.updateVideo = async archive => {
                 videoId,
                 description,
                 author,
+                paid,
                 url: s3Location
               }
             }
@@ -188,6 +228,7 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           author,
+          paid,
           url
         };
         await updateVideo(body);
@@ -197,9 +238,10 @@ exports.updateVideo = async archive => {
             message: 'Video updated with success.',
             video: {
               title,
-              issueId,
+              videoId,
               description,
               author,
+              paid,
               url
             }
           }
@@ -211,5 +253,23 @@ exports.updateVideo = async archive => {
   } catch (err) {
     console.log(`Error updating video metadata: `, err);
     return badImplementationRequest('Error updating video metadata.');
+  }
+};
+
+exports.deleteVideoById = async videoId => {
+  try {
+    const video = await getVideoById(videoId);
+    if (video) {
+      const { title } = video;
+      await deleteVideoByKey(title);
+      const deletedVideo = await deleteVideoById(videoId);
+      if (deletedVideo) {
+        return [204];
+      }
+    }
+    return badRequest(`No video found with id provided.`);
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+    return badImplementationRequest('Error deleting video by id.');
   }
 };
