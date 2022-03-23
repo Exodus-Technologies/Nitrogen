@@ -6,7 +6,9 @@ import {
   doesS3BucketExist,
   createS3Bucket,
   doesS3ObjectExist,
-  deleteVideoByKey
+  deleteVideoByKey,
+  copyS3Object,
+  getObjectUrlFromS3
 } from '../aws';
 import {
   saveVideoRefToDB,
@@ -34,12 +36,12 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const { title, author, videoId, paid } = fields;
+      const file = { ...fields };
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
-        resolve({ filepath, title, author, videoId, paid });
+        resolve({ ...file, filepath });
       } else {
-        resolve({ title, author, videoId, paid });
+        resolve(file);
       }
     });
   });
@@ -47,7 +49,7 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, filepath } = archive;
+    const { title, author, filepath, description } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
     }
@@ -66,6 +68,7 @@ exports.uploadVideo = async archive => {
         const body = {
           title,
           author,
+          description,
           url: s3Location
         };
         const savedVideo = await saveVideoRefToDB(body);
@@ -81,6 +84,7 @@ exports.uploadVideo = async archive => {
           const body = {
             title,
             author,
+            description,
             url: s3Location
           };
           const savedVideo = await saveVideoRefToDB(body);
@@ -151,6 +155,32 @@ exports.updateVideo = async archive => {
     }
     const video = await getVideoById(videoId);
     if (video) {
+      if (title !== video.title) {
+        await copyS3Object(video.title, title);
+        const s3Location = getObjectUrlFromS3(title);
+        const body = {
+          title,
+          videoId,
+          description,
+          author,
+          url: s3Location
+        };
+        await updateVideo(body);
+        await deleteVideoByKey(video.title);
+        return [
+          200,
+          {
+            message: 'Video uploaded to s3 with success',
+            video: {
+              title,
+              videoId,
+              description,
+              author,
+              url: s3Location
+            }
+          }
+        ];
+      }
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
