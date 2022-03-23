@@ -56,3 +56,14 @@ exports.updateVideo = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteVideoById = async (req, res, next) => {
+  try {
+    const { videoId } = req.params;
+    const [statusCode] = await VideoService.deleteVideoById(videoId);
+    res.status(statusCode).end();
+  } catch (err) {
+    console.log(`Error with deleting video by id: ${videoId}: `, err);
+    next(err);
+  }
+};

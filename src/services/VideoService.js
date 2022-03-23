@@ -16,6 +16,7 @@ import {
   getVideoById,
   getVideoByTitle,
   updateVideo,
+  deleteVideoById,
   getVideos
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
@@ -227,7 +228,7 @@ exports.updateVideo = async archive => {
             message: 'Video updated with success.',
             video: {
               title,
-              issueId,
+              videoId,
               description,
               author,
               url
@@ -241,5 +242,23 @@ exports.updateVideo = async archive => {
   } catch (err) {
     console.log(`Error updating video metadata: `, err);
     return badImplementationRequest('Error updating video metadata.');
+  }
+};
+
+exports.deleteVideoById = async videoId => {
+  try {
+    const video = await getVideoById(videoId);
+    if (video) {
+      const { title } = video;
+      await deleteVideoByKey(title);
+      const deletedVideo = await deleteVideoById(videoId);
+      if (deletedVideo) {
+        return [204];
+      }
+    }
+    return badRequest(`No video found with id provided.`);
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+    return badImplementationRequest('Error deleting video by id.');
   }
 };

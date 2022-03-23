@@ -31,11 +31,11 @@ const appIdQueryValidation = [
   query('platform').isString().withMessage('Must provide a device platform.')
 ];
 
-const videoViewsUpdateValidation = [
+const videoIdBodyUpdateValidation = [
   body('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
-const videoIdUpdateValidation = [
+const videoIdParamValidation = [
   param('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
@@ -43,6 +43,6 @@ export {
   validationResult,
   videoQueryValidation,
   appIdQueryValidation,
-  videoViewsUpdateValidation,
-  videoIdUpdateValidation
+  videoIdBodyUpdateValidation,
+  videoIdParamValidation
 };

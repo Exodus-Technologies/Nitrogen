@@ -1,9 +1,9 @@
 import express from 'express';
 import { VideoController } from '../controllers';
 import {
-  videoIdUpdateValidation,
+  videoIdParamValidation,
   videoQueryValidation,
-  videoViewsUpdateValidation
+  videoIdBodyUpdateValidation
 } from '../validations';
 import { validationHandler } from '../utils';
 
@@ -21,7 +21,7 @@ router.get(
 
 router.get(
   '/video-service/getVideo/:videoId',
-  videoIdUpdateValidation,
+  videoIdParamValidation,
   validationHandler,
   VideoController.getVideo
 );
@@ -30,9 +30,16 @@ router.put('/video-service/updateVideo', VideoController.updateVideo);
 
 router.put(
   '/video-service/updateViews',
-  videoViewsUpdateValidation,
+  videoIdBodyUpdateValidation,
   validationHandler,
   VideoController.updateViews
+);
+
+router.delete(
+  '/video-service/deleteVideo/:videoId',
+  videoIdParamValidation,
+  validationHandler,
+  VideoController.deleteVideoById
 );
 
 export default router;

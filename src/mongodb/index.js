@@ -122,3 +122,9 @@ export const saveBroadcastToDb = async payload => {
     console.log('Error saving broadcast data to db: ', err);
   }
 };
+
+export const deleteVideoById = async videoId => {
+  const { Video } = models;
+  const deletedVideo = await Video.deleteOne({ videoId });
+  return deletedVideo;
+};
