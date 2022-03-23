@@ -150,7 +150,7 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, filepath, videoId, description, author } = archive;
+    const { title, filepath, videoId, description, author, paid } = archive;
     if (doesValueHaveSpaces(title)) {
       return badRequest('Title of video must not have spaces.');
     }
@@ -164,6 +164,7 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           author,
+          paid,
           url: s3Location
         };
         await updateVideo(body);
@@ -177,6 +178,7 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
+              paid,
               url: s3Location
             }
           }
@@ -195,6 +197,7 @@ exports.updateVideo = async archive => {
             videoId,
             description,
             author,
+            paid,
             url: s3Location
           };
           await updateVideo(body);
@@ -207,6 +210,7 @@ exports.updateVideo = async archive => {
                 videoId,
                 description,
                 author,
+                paid,
                 url: s3Location
               }
             }
@@ -219,6 +223,7 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           author,
+          paid,
           url
         };
         await updateVideo(body);
@@ -231,6 +236,7 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
+              paid,
               url
             }
           }
