@@ -1,6 +1,6 @@
 import express from 'express';
 import { appIdQueryValidation } from '../validations';
-import { validationHandler } from '../utils';
+import { validationHandler, cache } from '../middlewares';
 import { BambuserController } from '../controllers';
 
 const { Router } = express;
@@ -10,6 +10,7 @@ router.get(
   '/video-service/getApplicationId',
   appIdQueryValidation,
   validationHandler,
+  cache(),
   BambuserController.getApplicationId
 );
 
