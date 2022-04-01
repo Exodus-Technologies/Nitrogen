@@ -5,7 +5,7 @@ import {
   videoQueryValidation,
   videoIdBodyUpdateValidation
 } from '../validations';
-import { validationHandler, cache } from '../middlewares';
+import { validationHandler } from '../middlewares';
 
 const { Router } = express;
 const router = Router();
@@ -16,7 +16,6 @@ router.get(
   '/video-service/getVideos',
   videoQueryValidation,
   validationHandler,
-  cache(),
   VideoController.getVideos
 );
 
@@ -24,7 +23,6 @@ router.get(
   '/video-service/getVideo/:videoId',
   videoIdParamValidation,
   validationHandler,
-  cache(),
   VideoController.getVideo
 );
 
