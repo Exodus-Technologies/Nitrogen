@@ -51,21 +51,39 @@ export const updateVideoViews = async videoId => {
 };
 
 export const getVideoByTitle = async title => {
-  const { Video } = models;
-  const video = await Video.findOne({ title });
-  return video;
+  try {
+    const { Video } = models;
+    const video = await Video.findOne({ title });
+    return video;
+  } catch (err) {
+    console.log('Error getting video data from db by title: ', err);
+  }
 };
 
 export const getVideoById = async videoId => {
-  const { Video } = models;
-  const video = await Video.findOne({ videoId });
-  return video;
+  try {
+    const { Video } = models;
+    const video = await Video.findOne({ videoId });
+    return video;
+  } catch (err) {
+    console.log('Error getting video data from db by id: ', err);
+  }
 };
 
 export const getVideos = async query => {
-  const { Video } = models;
-  const videos = await Video.find(query, queryOps);
-  return videos;
+  try {
+    const { Video } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Video.find(query, queryOps)
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .exec();
+  } catch (err) {
+    console.log('Error getting video data from db: ', err);
+  }
 };
 
 export const updateBroadcastInDB = async (broadcastId, livestream) => {
@@ -124,7 +142,11 @@ export const saveBroadcastToDb = async payload => {
 };
 
 export const deleteVideoById = async videoId => {
-  const { Video } = models;
-  const deletedVideo = await Video.deleteOne({ videoId });
-  return deletedVideo;
+  try {
+    const { Video } = models;
+    const deletedVideo = await Video.deleteOne({ videoId });
+    return deletedVideo;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+  }
 };

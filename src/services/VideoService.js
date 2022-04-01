@@ -108,7 +108,7 @@ exports.getVideos = async query => {
   try {
     const videos = await getVideos(query);
     if (videos) {
-      return [200, { items: videos }];
+      return [200, { message: 'Videos fetched from db with success', videos }];
     } else {
       return badRequest(`No videos found with selected query params.`);
     }
@@ -122,7 +122,7 @@ exports.getVideo = async videoId => {
   try {
     const video = await getVideoById(videoId);
     if (video) {
-      return [200, { video }];
+      return [200, { message: 'Video fetched from db with success', video }];
     } else {
       return badRequest(`No video found with id provided.`);
     }

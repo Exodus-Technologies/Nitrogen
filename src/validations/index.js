@@ -6,13 +6,16 @@
 import { body, query, param, validationResult } from 'express-validator';
 
 const videoQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for videos'),
   query('limit')
     .isString()
     .not()
     .isEmpty()
-    .withMessage('Must provide a limit for users')
-    .optional()
-    .default(30),
+    .withMessage('Must provide a limit for videos'),
   query('title')
     .isString()
     .withMessage('Must provide a existing video title')
