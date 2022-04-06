@@ -4,7 +4,6 @@ import formidable from 'formidable';
 import {
   uploadArchiveToS3Location,
   doesS3BucketExist,
-  createS3Bucket,
   doesS3ObjectExist,
   deleteVideoByKey,
   copyS3Object,
@@ -27,8 +26,26 @@ function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-function doesValueHaveSpaces(str) {
-  return /\s/.test(str);
+function removeSpaces(str) {
+  return str.replace(/\s+/g, '');
+}
+
+function fancyTimeFormat(duration) {
+  // Hours, minutes and seconds
+  const hrs = ~~(duration / 3600);
+  const mins = ~~((duration % 3600) / 60);
+  const secs = ~~duration % 60;
+
+  // Output like "1:01" or "4:03:59" or "123:03:59"
+  let ret = '';
+
+  if (hrs > 0) {
+    ret += '' + hrs + ':' + (mins < 10 ? '0' : '');
+  }
+
+  ret += '' + mins + ':' + (secs < 10 ? '0' : '');
+  ret += '' + secs;
+  return ret;
 }
 
 exports.getPayloadFromRequest = async req => {
@@ -37,7 +54,7 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      const file = { ...fields };
+      const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
         const { filepath } = files['file'];
         resolve({ ...file, filepath });
@@ -50,12 +67,10 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, filepath, description } = archive;
+    const { title, author, description, filepath, key, paid, categories } =
+      archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
-    }
-    if (doesValueHaveSpaces(title)) {
-      return badRequest('Title of video must not have spaces.');
     }
     const video = await getVideoByTitle(title);
     if (video) {
@@ -65,36 +80,26 @@ exports.uploadVideo = async archive => {
     } else {
       const isBucketAvaiable = await doesS3BucketExist();
       if (isBucketAvaiable) {
-        const s3Location = await uploadArchiveToS3Location(archive);
+        const { location, duration } = await uploadArchiveToS3Location(archive);
         const body = {
           title,
           author,
           description,
-          url: s3Location
+          key,
+          paid,
+          categories: categories.split(','),
+          duration: fancyTimeFormat(duration),
+          url: location
         };
+
         const savedVideo = await saveVideoRefToDB(body);
-        return [
-          200,
-          { message: 'Video uploaded to s3 with success', video: savedVideo }
-        ];
-      } else {
-        await createS3Bucket();
-        const isBucketAvaiable = await doesS3BucketExist();
-        if (isBucketAvaiable) {
-          const s3Location = await uploadArchiveToS3Location(archive);
-          const body = {
-            title,
-            author,
-            description,
-            url: s3Location
-          };
-          const savedVideo = await saveVideoRefToDB(body);
+        if (savedVideo) {
           return [
             200,
             { message: 'Video uploaded to s3 with success', video: savedVideo }
           ];
         } else {
-          return badRequest('Unable to create s3 bucket.');
+          return badRequest('Unable to save video metadata.');
         }
       }
     }
@@ -150,10 +155,8 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, filepath, videoId, description, author, paid } = archive;
-    if (doesValueHaveSpaces(title)) {
-      return badRequest('Title of video must not have spaces.');
-    }
+    const { title, filepath, videoId, description, author, paid, categories } =
+      archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -161,19 +164,22 @@ exports.updateVideo = async archive => {
     }
     const video = await getVideoById(videoId);
     if (video) {
-      if (title !== video.title) {
-        await copyS3Object(video.title, title);
-        const s3Location = getObjectUrlFromS3(title);
+      const newKey = removeSpaces(title);
+      if (newKey !== video.key) {
+        await copyS3Object(video.key, newKey);
+        const s3Location = getObjectUrlFromS3(newKey);
         const body = {
           title,
           videoId,
           description,
           author,
+          key: newKey,
+          categories: categories.split(',').map(item => item.trim()),
           paid,
           url: s3Location
         };
         await updateVideo(body);
-        await deleteVideoByKey(video.title);
+        await deleteVideoByKey(video.key);
         return [
           200,
           {
@@ -192,18 +198,23 @@ exports.updateVideo = async archive => {
       if (filepath) {
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
-          const s3Object = await doesS3ObjectExist(title);
+          const s3Object = await doesS3ObjectExist(newKey);
           if (s3Object) {
-            await deleteVideoByKey(title);
+            await deleteVideoByKey(newKey);
           }
-          const s3Location = await uploadArchiveToS3Location(archive);
+          const { location, duration } = await uploadArchiveToS3Location(
+            archive
+          );
           const body = {
             title,
             videoId,
             description,
+            key: newKey,
             author,
+            duration: fancyTimeFormat(duration),
+            categories: categories.split(',').map(item => item.trim()),
             paid,
-            url: s3Location
+            url: location
           };
           await updateVideo(body);
           return [
@@ -216,18 +227,20 @@ exports.updateVideo = async archive => {
                 description,
                 author,
                 paid,
-                url: s3Location
+                url: location
               }
             }
           ];
         }
       } else {
-        const url = await getObjectUrlFromS3(title);
+        const url = await getObjectUrlFromS3(newKey);
         const body = {
           title,
           videoId,
           description,
+          key: newKey,
           author,
+          categories: categories.split(',').map(item => item.trim()),
           paid,
           url
         };
@@ -260,8 +273,8 @@ exports.deleteVideoById = async videoId => {
   try {
     const video = await getVideoById(videoId);
     if (video) {
-      const { title } = video;
-      await deleteVideoByKey(title);
+      const { key } = video;
+      await deleteVideoByKey(key);
       const deletedVideo = await deleteVideoById(videoId);
       if (deletedVideo) {
         return [204];
