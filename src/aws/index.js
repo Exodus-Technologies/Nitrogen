@@ -10,6 +10,7 @@ import {
   DeleteObjectCommand,
   CopyObjectCommand
 } from '@aws-sdk/client-s3';
+import { getVideoDurationInSeconds } from 'get-video-duration';
 import config from '../config';
 import { DEFAULT_FILE_EXTENTION } from '../constants';
 
@@ -26,13 +27,14 @@ const s3Client = new S3Client({
 });
 
 const getFileContentFromPath = path => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      fs.readFile(path, function (err, buffer) {
+      fs.readFile(path, async (err, buffer) => {
         if (err) {
           reject(err);
         }
-        resolve(buffer);
+        const duration = await getVideoDurationInSeconds(path);
+        resolve({ file: buffer, duration });
       });
     } catch (err) {
       console.log(`Error getting file: ${path} `, err);
@@ -171,14 +173,14 @@ const uploadToS3 = (fileContent, key) => {
   });
 };
 
-export const uploadArchiveToS3Location = async file => {
+export const uploadArchiveToS3Location = async archive => {
   return new Promise(async (resolve, reject) => {
     try {
-      const { title, filepath } = file;
-      const fileContent = await getFileContentFromPath(filepath);
-      await uploadToS3(fileContent, title);
-      const fileLocation = getObjectUrlFromS3(title);
-      resolve(fileLocation);
+      const { filepath, key } = archive;
+      const { file, duration } = await getFileContentFromPath(filepath);
+      await uploadToS3(file, key);
+      const fileLocation = getObjectUrlFromS3(key);
+      resolve({ location: fileLocation, duration });
     } catch (err) {
       console.log(`Error uploading archive to s3 bucket: ${file} `, err);
       reject(err);
