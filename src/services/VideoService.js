@@ -87,7 +87,7 @@ exports.uploadVideo = async archive => {
           description,
           key,
           paid,
-          categories: categories.split(','),
+          categories: categories.split(',').map(item => item.trim()),
           duration: fancyTimeFormat(duration),
           url: location
         };

@@ -17,7 +17,13 @@ export const getVideos = async query => {
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
     const skipIndex = (page - 1) * limit;
-    return await Video.find(query, queryOps)
+    const q = {
+      ...query,
+      categories: {
+        $in: [...query.categories.split(',').map(item => item.trim())]
+      }
+    };
+    return await Video.find(q, queryOps)
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
