@@ -46,10 +46,37 @@ const videoIdParamValidation = [
   param('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
+const categoryQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for categories'),
+  query('limit')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a limit for categories'),
+  query('name')
+    .isString()
+    .withMessage('Must provide a existing category name')
+    .optional()
+];
+
+const categoryPostValidation = [
+  body('name').isString().withMessage('Must provide a category name'),
+  body('description')
+    .isString()
+    .isLength({ max: 255 })
+    .withMessage('Must provide a category name')
+];
+
 export {
   validationResult,
   videoQueryValidation,
   appIdQueryValidation,
   videoIdBodyUpdateValidation,
-  videoIdParamValidation
+  videoIdParamValidation,
+  categoryQueryValidation,
+  categoryPostValidation
 };

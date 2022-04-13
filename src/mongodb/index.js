@@ -158,3 +158,31 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     console.log('Error updating broadcast status: ', err);
   }
 };
+
+export const getCategories = async query => {
+  try {
+    const { Category } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Category.find(query, queryOps)
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .exec();
+  } catch (err) {
+    console.log('Error getting category data from db: ', err);
+  }
+};
+
+export const saveCategoryRefToDB = async payload => {
+  try {
+    const { Category } = models;
+    const category = new Category(payload);
+    const createdCategory = await category.save();
+    const { description, name, categoryId } = createdCategory;
+    return { description, name, categoryId };
+  } catch (err) {
+    console.log('Error saving video data to db: ', err);
+  }
+};
