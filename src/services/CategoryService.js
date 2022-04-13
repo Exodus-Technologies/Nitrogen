@@ -1,6 +1,10 @@
 'use strict';
 
-import { getCategories, saveCategoryRefToDB } from '../mongodb';
+import {
+  getCategories,
+  saveCategoryRefToDB,
+  deleteCategoryById
+} from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
 exports.getCategories = async query => {
@@ -24,14 +28,27 @@ exports.getCategories = async query => {
 
 exports.createCategory = async payload => {
   try {
-    const category = await saveCategoryRefToDB(payload);
+    const [error, category] = await saveCategoryRefToDB(payload);
     if (category) {
       return [200, { message: 'Category created with success.', category }];
     } else {
-      return badRequest(`Unable to create category.`);
+      return badRequest(error.message);
     }
   } catch (err) {
     console.log('Error creating new category: ', err);
     return badImplementationRequest('Error creating new category.');
+  }
+};
+
+exports.deleteCategoryById = async videoId => {
+  try {
+    const deletedCategory = await deleteCategoryById(videoId);
+    if (deletedCategory) {
+      return [204];
+    }
+    return badRequest(`No video found with id provided.`);
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+    return badImplementationRequest('Error deleting video by id.');
   }
 };

@@ -175,14 +175,38 @@ export const getCategories = async query => {
   }
 };
 
+export const getCategoryByName = async name => {
+  try {
+    const { Category } = models;
+    const category = await Category.findOne({ name });
+    return category;
+  } catch (err) {
+    console.log('Error getting category data from db by name: ', err);
+  }
+};
+
 export const saveCategoryRefToDB = async payload => {
   try {
     const { Category } = models;
-    const category = new Category(payload);
-    const createdCategory = await category.save();
+    const category = await Category.findOne({ name: payload.name });
+    if (category) {
+      return [Error('category with name already exists.')];
+    }
+    const cat = new Category(payload);
+    const createdCategory = await cat.save();
     const { description, name, categoryId } = createdCategory;
-    return { description, name, categoryId };
+    return [null, { description, name, categoryId }];
   } catch (err) {
     console.log('Error saving video data to db: ', err);
+  }
+};
+
+export const deleteCategoryById = async categoryId => {
+  try {
+    const { Category } = models;
+    const deletedCategory = await Category.deleteOne({ categoryId });
+    return deletedCategory;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
   }
 };

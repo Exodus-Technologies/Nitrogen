@@ -23,3 +23,14 @@ exports.createCategory = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteCategoryById = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const [statusCode] = await CategoryService.deleteCategoryById(categoryId);
+    res.status(statusCode).end();
+  } catch (err) {
+    console.log(`Error with deleting category by id: ${categoryId}: `, err);
+    next(err);
+  }
+};

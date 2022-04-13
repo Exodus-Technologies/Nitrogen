@@ -4,7 +4,8 @@ import express from 'express';
 import { CategoryController } from '../controllers';
 import {
   categoryQueryValidation,
-  categoryPostValidation
+  categoryPostValidation,
+  categoryIdParamValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -23,6 +24,13 @@ router.post(
   categoryPostValidation,
   validationHandler,
   CategoryController.createCategory
+);
+
+router.delete(
+  '/video-service/deleteCategory/:categoryId',
+  categoryIdParamValidation,
+  validationHandler,
+  CategoryController.deleteCategoryById
 );
 
 export default router;
