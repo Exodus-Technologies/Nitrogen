@@ -106,6 +106,7 @@ exports.uploadVideo = async archive => {
           description,
           key,
           paid,
+          price,
           categories: categories.split(',').map(item => item.trim()),
           duration: fancyTimeFormat(duration),
           url: location
@@ -196,6 +197,7 @@ exports.updateVideo = async archive => {
           description,
           author,
           key: newKey,
+          price,
           categories: categories.split(',').map(item => item.trim()),
           paid,
           url: s3Location
@@ -211,6 +213,7 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
+              price,
               paid,
               url: s3Location
             }
@@ -233,6 +236,7 @@ exports.updateVideo = async archive => {
             description,
             key: newKey,
             author,
+            price,
             duration: fancyTimeFormat(duration),
             categories: categories.split(',').map(item => item.trim()),
             paid,
@@ -248,6 +252,7 @@ exports.updateVideo = async archive => {
                 videoId,
                 description,
                 author,
+                price,
                 paid,
                 url: location
               }
@@ -261,6 +266,7 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           key: newKey,
+          price,
           author,
           categories: categories.split(',').map(item => item.trim()),
           paid,
@@ -276,6 +282,7 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
+              price,
               paid,
               url
             }
