@@ -30,6 +30,11 @@ function removeSpaces(str) {
   return str.replace(/\s+/g, '');
 }
 
+function checkPriceStr(str) {
+  const regex = new RegExp('^d+(?:[.,]d+)*$');
+  return regex.test(str);
+}
+
 function fancyTimeFormat(duration) {
   // Hours, minutes and seconds
   const hrs = ~~(duration / 3600);
@@ -67,10 +72,24 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, description, filepath, key, paid, categories } =
-      archive;
+    const {
+      title,
+      author,
+      description,
+      filepath,
+      key,
+      paid,
+      categories,
+      price
+    } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
+    }
+    if (!price) {
+      return badRequest('Price must be provided to upload.');
+    }
+    if (price && !checkPriceStr(price)) {
+      return badRequest('Price must be in a dollar format.');
     }
     const video = await getVideoByTitle(title);
     if (video) {
@@ -155,12 +174,15 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, filepath, videoId, description, author, paid, categories } =
+    const { title, author, description, filepath, paid, categories, price } =
       archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
+    }
+    if (price && !checkPriceStr(price)) {
+      return badRequest('Price must be in a dollar format.');
     }
     const video = await getVideoById(videoId);
     if (video) {
