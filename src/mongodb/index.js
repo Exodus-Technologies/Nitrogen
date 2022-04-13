@@ -158,3 +158,55 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     console.log('Error updating broadcast status: ', err);
   }
 };
+
+export const getCategories = async query => {
+  try {
+    const { Category } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Category.find(query, queryOps)
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .exec();
+  } catch (err) {
+    console.log('Error getting category data from db: ', err);
+  }
+};
+
+export const getCategoryByName = async name => {
+  try {
+    const { Category } = models;
+    const category = await Category.findOne({ name });
+    return category;
+  } catch (err) {
+    console.log('Error getting category data from db by name: ', err);
+  }
+};
+
+export const saveCategoryRefToDB = async payload => {
+  try {
+    const { Category } = models;
+    const category = await Category.findOne({ name: payload.name });
+    if (category) {
+      return [Error('category with name already exists.')];
+    }
+    const cat = new Category(payload);
+    const createdCategory = await cat.save();
+    const { description, name, categoryId } = createdCategory;
+    return [null, { description, name, categoryId }];
+  } catch (err) {
+    console.log('Error saving video data to db: ', err);
+  }
+};
+
+export const deleteCategoryById = async categoryId => {
+  try {
+    const { Category } = models;
+    const deletedCategory = await Category.deleteOne({ categoryId });
+    return deletedCategory;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+  }
+};
