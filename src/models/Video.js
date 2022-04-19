@@ -21,12 +21,7 @@ const videoSchema = new Schema(
     key: { type: String, required: true },
     thumbnail: { type: String },
     duration: { type: String, required: true },
-    price: { type: String, required: true },
-    categories: { type: [String], required: true },
-    paid: {
-      type: Boolean,
-      default: false
-    }
+    categories: { type: [String], required: true }
   },
   { timestamps: true }
 );

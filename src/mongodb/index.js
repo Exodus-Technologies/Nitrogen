@@ -19,9 +19,11 @@ export const getVideos = async query => {
     const skipIndex = (page - 1) * limit;
     const q = {
       ...query,
-      categories: {
-        $in: [...query.categories.split(',').map(item => item.trim())]
-      }
+      ...(query.categories && {
+        categories: {
+          $in: [...query.categories.split(',').map(item => item.trim())]
+        }
+      })
     };
     return await Video.find(q, queryOps)
       .sort({ _id: 1 })
@@ -58,9 +60,9 @@ export const saveVideoRefToDB = async payload => {
     const { Video } = models;
     const video = new Video(payload);
     const createdVideo = await video.save();
-    const { title, url, description, totalViews, author, paid, videoId } =
+    const { title, url, description, totalViews, author, videoId } =
       createdVideo;
-    return { title, url, description, totalViews, author, paid, videoId };
+    return { title, url, description, totalViews, author, videoId };
   } catch (err) {
     console.log('Error saving video data to db: ', err);
   }
