@@ -89,7 +89,7 @@ export const updateVideoViews = async videoId => {
     if (video) {
       video.totalViews += 1;
       await video.save();
-      return video.totalViews;
+      return video;
     }
   } catch (err) {
     console.log('Error updating video views: ', err);

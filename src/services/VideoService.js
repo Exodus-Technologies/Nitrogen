@@ -137,11 +137,15 @@ exports.getVideo = async videoId => {
 
 exports.updateViews = async videoId => {
   try {
-    const videoViews = await updateVideoViews(videoId);
-    if (videoViews) {
+    const video = await updateVideoViews(videoId);
+    if (video) {
+      const { totalViews, title } = video;
       return [
         200,
-        { message: `${videoId} has ${videoViews} views.`, views: videoViews }
+        {
+          message: `Video with title '${title}' has ${totalViews} views.`,
+          views: totalViews
+        }
       ];
     }
     return badRequest(`No videos found to update clicks.`);
