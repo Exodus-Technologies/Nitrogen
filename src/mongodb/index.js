@@ -58,9 +58,9 @@ export const saveVideoRefToDB = async payload => {
     const { Video } = models;
     const video = new Video(payload);
     const createdVideo = await video.save();
-    const { title, url, description, totalViews, author, paid, videoId } =
+    const { title, url, description, totalViews, author, videoId } =
       createdVideo;
-    return { title, url, description, totalViews, author, paid, videoId };
+    return { title, url, description, totalViews, author, videoId };
   } catch (err) {
     console.log('Error saving video data to db: ', err);
   }

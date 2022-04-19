@@ -24,10 +24,6 @@ const videoQueryValidation = [
     .isString()
     .withMessage('Must provide a valid video author.')
     .optional(),
-  query('paid')
-    .isBoolean()
-    .withMessage('Must provide a valid status for paid vs free videos.')
-    .optional(),
   query('categories')
     .isString()
     .withMessage('Must provide a category for video to match with.')

@@ -30,11 +30,6 @@ function removeSpaces(str) {
   return str.replace(/\s+/g, '');
 }
 
-function checkPriceStr(str) {
-  const regex = new RegExp('^d+(?:[.,]d+)*$');
-  return regex.test(str);
-}
-
 function fancyTimeFormat(duration) {
   // Hours, minutes and seconds
   const hrs = ~~(duration / 3600);
@@ -72,24 +67,9 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const {
-      title,
-      author,
-      description,
-      filepath,
-      key,
-      paid,
-      categories,
-      price
-    } = archive;
+    const { title, author, description, filepath, key, categories } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
-    }
-    if (!price) {
-      return badRequest('Price must be provided to upload.');
-    }
-    if (price && !checkPriceStr(price)) {
-      return badRequest('Price must be in a dollar format.');
     }
     const video = await getVideoByTitle(title);
     if (video) {
@@ -105,8 +85,6 @@ exports.uploadVideo = async archive => {
           author,
           description,
           key,
-          paid,
-          price,
           categories: categories.split(',').map(item => item.trim()),
           duration: fancyTimeFormat(duration),
           url: location
@@ -175,15 +153,11 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, author, description, filepath, paid, categories, price } =
-      archive;
+    const { title, author, description, filepath, categories } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
-    }
-    if (price && !checkPriceStr(price)) {
-      return badRequest('Price must be in a dollar format.');
     }
     const video = await getVideoById(videoId);
     if (video) {
@@ -197,9 +171,7 @@ exports.updateVideo = async archive => {
           description,
           author,
           key: newKey,
-          price,
           categories: categories.split(',').map(item => item.trim()),
-          paid,
           url: s3Location
         };
         await updateVideo(body);
@@ -213,8 +185,6 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
-              price,
-              paid,
               url: s3Location
             }
           }
@@ -236,10 +206,8 @@ exports.updateVideo = async archive => {
             description,
             key: newKey,
             author,
-            price,
             duration: fancyTimeFormat(duration),
             categories: categories.split(',').map(item => item.trim()),
-            paid,
             url: location
           };
           await updateVideo(body);
@@ -252,8 +220,6 @@ exports.updateVideo = async archive => {
                 videoId,
                 description,
                 author,
-                price,
-                paid,
                 url: location
               }
             }
@@ -266,10 +232,8 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           key: newKey,
-          price,
           author,
           categories: categories.split(',').map(item => item.trim()),
-          paid,
           url
         };
         await updateVideo(body);
@@ -282,8 +246,6 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
-              price,
-              paid,
               url
             }
           }
