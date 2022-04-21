@@ -143,7 +143,7 @@ exports.updateViews = async videoId => {
       return [
         200,
         {
-          message: `Video with title '${title}' has ${totalViews} views.`,
+          message: `Video with title '${title.trim()}' has ${totalViews} views.`,
           views: totalViews
         }
       ];
@@ -157,11 +157,15 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, author, description, filepath, categories } = archive;
+    const { title, author, description, filepath, categories, videoId } =
+      archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
+    }
+    if (!categories) {
+      return badRequest('Video categories must be provided.');
     }
     const video = await getVideoById(videoId);
     if (video) {
