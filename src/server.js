@@ -14,7 +14,8 @@ import {
   videoRouter,
   bambuserRouter,
   broadcastRouter,
-  categoryRouter
+  categoryRouter,
+  subscriptionRouter
 } from './routes';
 
 // Create the Express application object
@@ -76,5 +77,9 @@ console.log('Loaded bambuser routes middleware.');
 //Video category middleware
 server.use(categoryRouter);
 console.log('Loaded category routes middleware.');
+
+//Subscription middleware
+server.use(subscriptionRouter);
+console.log('Loaded subscription routes middleware.');
 
 export default http.createServer(server);
