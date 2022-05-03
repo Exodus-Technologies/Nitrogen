@@ -27,6 +27,10 @@ const videoQueryValidation = [
   query('categories')
     .isString()
     .withMessage('Must provide a category for video to match with.')
+    .optional(),
+  query('userId')
+    .isString()
+    .withMessage('Must provide a valid userId.')
     .optional()
 ];
 
@@ -73,6 +77,34 @@ const categoryIdParamValidation = [
     .withMessage('Must provide a existing category id.')
 ];
 
+const subscriptionQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for issues.'),
+  query('limit')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a limit for issues.')
+];
+
+const subscriptionPostBodyValidation = [
+  body('userId').isNumeric().withMessage('Must provide a valid userId.')
+];
+
+const subscriptionStatusQueryValidation = [
+  query('userId').isString().withMessage('Must provide a valid userId.')
+];
+
+const subscriptionPutBodyValidation = [
+  body('startDate')
+    .isString()
+    .withMessage('Must provide a valid startDate for subscription.'),
+  body('userId').isNumeric().withMessage('Must provide a valid userId.')
+];
+
 export {
   validationResult,
   videoQueryValidation,
@@ -81,5 +113,9 @@ export {
   videoIdParamValidation,
   categoryQueryValidation,
   categoryPostValidation,
-  categoryIdParamValidation
+  categoryIdParamValidation,
+  subscriptionQueryValidation,
+  subscriptionPostBodyValidation,
+  subscriptionPutBodyValidation,
+  subscriptionStatusQueryValidation
 };

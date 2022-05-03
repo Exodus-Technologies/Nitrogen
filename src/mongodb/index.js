@@ -2,6 +2,13 @@
 
 import config from '../config';
 import models from '../models';
+import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
+import {
+  createMoment,
+  getSubscriptionStartDate,
+  getSubscriptionEndDate,
+  createFormattedDate
+} from '../utilities';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -13,10 +20,18 @@ const queryOps = { __v: 0, _id: 0 };
 
 export const getVideos = async query => {
   try {
-    const { Video } = models;
+    const { Video, Subscription } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
+    const userId = parseInt(query.userId);
     const skipIndex = (page - 1) * limit;
+    const subscriptions = userId
+      ? await Subscription.find({ userId, type: DEFAULT_SUBSCRIPTION_TYPE })
+          .sort({
+            endDate: 'desc'
+          })
+          .limit(1)
+      : null;
     const q = {
       ...query,
       ...(query.categories && {
@@ -25,11 +40,22 @@ export const getVideos = async query => {
         }
       })
     };
-    return await Video.find(q, queryOps)
+    const videos = await Video.find(q, queryOps)
       .sort({ _id: 1 })
       .limit(limit)
       .skip(skipIndex)
+      .sort({ createdAt: 'desc' })
+      .lean()
       .exec();
+    return videos.map(video => ({
+      ...video,
+      paid:
+        subscriptions && subscriptions.length
+          ? createMoment(video.createdAt).isBefore(
+              createMoment(subscriptions[0].endDate)
+            )
+          : false
+    }));
   } catch (err) {
     console.log('Error getting video data from db: ', err);
   }
@@ -210,5 +236,144 @@ export const deleteCategoryById = async categoryId => {
     return deletedCategory;
   } catch (err) {
     console.log('Error deleting video by id: ', err);
+  }
+};
+
+export const getSubscriptions = async query => {
+  try {
+    const { Subscription } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+    return await Subscription.find(
+      { ...query, type: DEFAULT_SUBSCRIPTION_TYPE },
+      queryOps
+    )
+      .sort({ _id: 1 })
+      .limit(limit)
+      .skip(skipIndex)
+      .sort({ endDate: 'asc' })
+      .exec();
+  } catch (err) {
+    console.log('Error getting subscription data from db: ', err);
+  }
+};
+
+export const createSubscription = async payload => {
+  try {
+    const { Subscription } = models;
+    const { userId } = payload;
+    const subscriptions = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+    if (!subscriptions.length) {
+      const body = {
+        ...payload,
+        startDate: payload.startDate
+          ? createFormattedDate(payload.startDate)
+          : getSubscriptionStartDate(),
+        endDate: payload.endDate
+          ? createFormattedDate(payload.endDate)
+          : getSubscriptionEndDate(),
+        purchaseDate: payload.purchaseDate
+          ? createFormattedDate(payload.purchaseDate)
+          : getSubscriptionStartDate()
+      };
+
+      const subscription = new Subscription(body);
+      const createdSubscription = await subscription.save();
+      const {
+        startDate,
+        endDate,
+        type,
+        purchaseDate,
+        amount,
+        userId,
+        subscriptionId
+      } = createdSubscription;
+      return [
+        null,
+        {
+          startDate,
+          endDate,
+          type,
+          purchaseDate,
+          amount,
+          userId,
+          subscriptionId
+        }
+      ];
+    }
+    return [new Error('Subscription is still active for the current year')];
+  } catch (err) {
+    console.log('Error saving subscription data to db: ', err);
+  }
+};
+
+export const updateSubscription = async payload => {
+  try {
+    const { Subscription } = models;
+    const { userId, startDate } = payload;
+    const subscriptions = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+
+    if (subscriptions) {
+      const subscription = subscriptions[0];
+      const filter = { subscriptionId: subscription.subscriptionId };
+      const options = { upsert: true, new: true };
+      const update = {
+        ...payload,
+        endDate: getSubscriptionEndDate(startDate)
+      };
+      const updatedSubscription = await Subscription.findOneAndUpdate(
+        filter,
+        update,
+        options
+      );
+      return [null, updatedSubscription];
+    }
+    return [new Error('No subscriptions to update')];
+  } catch (err) {
+    console.log('Error updating subscription data to db: ', err);
+  }
+};
+
+export const getSubscriptionStatus = async query => {
+  try {
+    const { Subscription } = models;
+    const { userId } = query;
+    const subscriptions = await Subscription.find({
+      userId,
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    })
+      .sort({
+        endDate: 'desc'
+      })
+      .limit(1);
+    if (subscriptions.length) {
+      const subscription = subscriptions[0];
+      const endDate = createMoment(subscription.endDate);
+      const currentDate = createMoment();
+      const diffInMonths = endDate.diff(currentDate, 'months');
+      if (Math.sign(diffInMonths) > 0) {
+        return [`Subscription ends in ${diffInMonths} months.`];
+      } else {
+        return [`Subscription expired ${diffInMonths} months ago.`];
+      }
+    }
+    return [''];
+  } catch (err) {
+    console.log('Error saving subscription data to db: ', err);
   }
 };

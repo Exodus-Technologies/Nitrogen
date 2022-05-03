@@ -9,6 +9,7 @@ import {
   copyS3Object,
   getObjectUrlFromS3
 } from '../aws';
+import { DEFAULT_MIME_TYPE } from '../constants';
 import {
   saveVideoRefToDB,
   updateVideoViews,
@@ -19,6 +20,7 @@ import {
   getVideos
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
+import { fancyTimeFormat } from '../utilities';
 
 const form = formidable({ multiples: true });
 
@@ -30,24 +32,6 @@ function removeSpaces(str) {
   return str.replace(/\s+/g, '');
 }
 
-function fancyTimeFormat(duration) {
-  // Hours, minutes and seconds
-  const hrs = ~~(duration / 3600);
-  const mins = ~~((duration % 3600) / 60);
-  const secs = ~~duration % 60;
-
-  // Output like "1:01" or "4:03:59" or "123:03:59"
-  let ret = '';
-
-  if (hrs > 0) {
-    ret += '' + hrs + ':' + (mins < 10 ? '0' : '');
-  }
-
-  ret += '' + mins + ':' + (secs < 10 ? '0' : '');
-  ret += '' + secs;
-  return ret;
-}
-
 exports.getPayloadFromRequest = async req => {
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
@@ -56,8 +40,8 @@ exports.getPayloadFromRequest = async req => {
       }
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
-        const { filepath } = files['file'];
-        resolve({ ...file, filepath });
+        const { filepath, mimetype } = files['file'];
+        resolve({ ...file, filepath, mimetype });
       } else {
         resolve(file);
       }
@@ -67,9 +51,13 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, description, filepath, key, categories } = archive;
+    const { title, author, description, filepath, key, categories, mimetype } =
+      archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
+    }
+    if (filepath && mimetype !== DEFAULT_MIME_TYPE) {
+      return badRequest('File must be a file with a mp4 extention.');
     }
     const video = await getVideoByTitle(title);
     if (video) {
@@ -85,7 +73,9 @@ exports.uploadVideo = async archive => {
           author,
           description,
           key,
-          categories: categories.split(',').map(item => item.trim()),
+          ...(categories && {
+            categories: categories.split(',').map(item => item.trim())
+          }),
           duration: fancyTimeFormat(duration),
           url: location
         };
@@ -143,7 +133,7 @@ exports.updateViews = async videoId => {
       return [
         200,
         {
-          message: `Video with title '${title}' has ${totalViews} views.`,
+          message: `Video with title '${title.trim()}' has ${totalViews} views.`,
           views: totalViews
         }
       ];
@@ -157,11 +147,22 @@ exports.updateViews = async videoId => {
 
 exports.updateVideo = async archive => {
   try {
-    const { title, author, description, filepath, categories } = archive;
+    const {
+      title,
+      author,
+      description,
+      filepath,
+      categories,
+      videoId,
+      mimetype
+    } = archive;
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
+    }
+    if (!categories) {
+      return badRequest('Video categories must be provided.');
     }
     const video = await getVideoById(videoId);
     if (video) {
@@ -175,7 +176,9 @@ exports.updateVideo = async archive => {
           description,
           author,
           key: newKey,
-          categories: categories.split(',').map(item => item.trim()),
+          ...(categories && {
+            categories: categories.split(',').map(item => item.trim())
+          }),
           url: s3Location
         };
         await updateVideo(body);
@@ -195,6 +198,9 @@ exports.updateVideo = async archive => {
         ];
       }
       if (filepath) {
+        if (mimetype !== DEFAULT_MIME_TYPE) {
+          return badRequest('File must be a file with a mp4 extention.');
+        }
         const isBucketAvaiable = await doesS3BucketExist();
         if (isBucketAvaiable) {
           const s3Object = await doesS3ObjectExist(newKey);
@@ -211,7 +217,9 @@ exports.updateVideo = async archive => {
             key: newKey,
             author,
             duration: fancyTimeFormat(duration),
-            categories: categories.split(',').map(item => item.trim()),
+            ...(categories && {
+              categories: categories.split(',').map(item => item.trim())
+            }),
             url: location
           };
           await updateVideo(body);
@@ -237,7 +245,9 @@ exports.updateVideo = async archive => {
           description,
           key: newKey,
           author,
-          categories: categories.split(',').map(item => item.trim()),
+          ...(categories && {
+            categories: categories.split(',').map(item => item.trim())
+          }),
           url
         };
         await updateVideo(body);
