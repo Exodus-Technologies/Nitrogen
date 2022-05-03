@@ -51,8 +51,16 @@ exports.getPayloadFromRequest = async req => {
 
 exports.uploadVideo = async archive => {
   try {
-    const { title, author, description, filepath, key, categories, mimetype } =
-      archive;
+    const {
+      title,
+      author,
+      description,
+      filepath,
+      key,
+      categories,
+      mimetype,
+      avaiableForSale
+    } = archive;
     if (!filepath) {
       return badRequest('File must be provided to upload.');
     }
@@ -76,6 +84,7 @@ exports.uploadVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
+          avaiableForSale,
           duration: fancyTimeFormat(duration),
           url: location
         };
@@ -154,8 +163,12 @@ exports.updateVideo = async archive => {
       filepath,
       categories,
       videoId,
-      mimetype
+      mimetype,
+      avaiableForSale
     } = archive;
+    if (!videoId) {
+      return badRequest('Video id must be provided.');
+    }
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
@@ -179,7 +192,8 @@ exports.updateVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
-          url: s3Location
+          url: s3Location,
+          avaiableForSale
         };
         await updateVideo(body);
         await deleteVideoByKey(video.key);
@@ -192,7 +206,8 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
-              url: s3Location
+              url: s3Location,
+              avaiableForSale
             }
           }
         ];
@@ -220,7 +235,8 @@ exports.updateVideo = async archive => {
             ...(categories && {
               categories: categories.split(',').map(item => item.trim())
             }),
-            url: location
+            url: location,
+            avaiableForSale
           };
           await updateVideo(body);
           return [
@@ -232,7 +248,8 @@ exports.updateVideo = async archive => {
                 videoId,
                 description,
                 author,
-                url: location
+                url: location,
+                avaiableForSale
               }
             }
           ];
@@ -248,7 +265,8 @@ exports.updateVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
-          url
+          url,
+          avaiableForSale
         };
         await updateVideo(body);
         return [
@@ -260,7 +278,8 @@ exports.updateVideo = async archive => {
               videoId,
               description,
               author,
-              url
+              url,
+              avaiableForSale
             }
           }
         ];
