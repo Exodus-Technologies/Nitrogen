@@ -274,7 +274,7 @@ export const createSubscription = async payload => {
         endDate: 'desc'
       })
       .limit(1);
-    if (!subscriptions.length) {
+    if (subscriptions.length < 1) {
       const body = {
         ...payload,
         startDate: payload.startDate
@@ -312,7 +312,9 @@ export const createSubscription = async payload => {
         }
       ];
     }
-    return [new Error('Subscription is still active for the current year')];
+    return [
+      new Error('Subscription for user is inactive. Please renew subscription.')
+    ];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
   }
@@ -368,11 +370,11 @@ export const getSubscriptionStatus = async query => {
       const subscription = subscriptions[0];
       const endDate = createMoment(subscription.endDate);
       const currentDate = createMoment();
-      const diffInMonths = endDate.diff(currentDate, 'months');
-      if (Math.sign(diffInMonths) > 0) {
-        return [`Subscription ends in ${diffInMonths} months.`];
+      const diffInDays = endDate.diff(currentDate, 'days');
+      if (Math.sign(diffInDays) > 0) {
+        return [`Subscription ends in ${diffInDays} days.`];
       } else {
-        return [`Subscription expired ${diffInMonths} months ago.`];
+        return [`Subscription expired ${diffInDays} days ago.`];
       }
     }
     return [''];
