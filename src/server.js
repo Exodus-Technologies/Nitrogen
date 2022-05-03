@@ -42,8 +42,8 @@ server.use(compression());
 console.log('Loaded compression middleware.');
 
 //BodyParser middleware
-server.use(express.urlencoded({ limit: '50Mb', extended: false }));
-server.use(express.json({ limit: '50Mb' }));
+server.use(express.urlencoded({ limit: '2gb', extended: false }));
+server.use(express.json({ limit: '2gb' }));
 console.log('Loaded body-parser middleware.');
 
 // Response time middleware
