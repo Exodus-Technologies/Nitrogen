@@ -22,7 +22,9 @@ import {
 import { badImplementationRequest, badRequest } from '../response-codes';
 import { fancyTimeFormat } from '../utilities';
 
-const form = formidable({ multiples: true, maxFileSize: 800 * 1024 * 1024 });
+const maxFileSize = 800 * 1024 * 1024; //800 MB
+
+const form = formidable({ multiples: true, maxFileSize });
 
 function isEmpty(obj) {
   return Object.keys(obj).length === 0;
