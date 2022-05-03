@@ -47,15 +47,18 @@ export const getVideos = async query => {
       .sort({ createdAt: 'desc' })
       .lean()
       .exec();
-    return videos.map(video => ({
-      ...video,
-      paid:
+    return videos.map(video => {
+      const isPaid =
         subscriptions && subscriptions.length
           ? createMoment(video.createdAt).isBefore(
               createMoment(subscriptions[0].endDate)
             )
-          : false
-    }));
+          : false;
+      return {
+        ...video,
+        myVideo: video.avaiableForSale && isPaid ? true : false
+      };
+    });
   } catch (err) {
     console.log('Error getting video data from db: ', err);
   }
