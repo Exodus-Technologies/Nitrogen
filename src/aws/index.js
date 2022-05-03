@@ -3,13 +3,13 @@
 import fs from 'fs';
 import {
   S3Client,
-  PutObjectCommand,
   ListBucketsCommand,
   HeadObjectCommand,
   CreateBucketCommand,
   DeleteObjectCommand,
   CopyObjectCommand
 } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import config from '../config';
 import { DEFAULT_FILE_EXTENTION } from '../constants';
@@ -164,9 +164,28 @@ const uploadToS3 = (fileContent, key) => {
       ACL: 'public-read'
     };
     try {
-      const data = await s3Client.send(new PutObjectCommand(params));
-      resolve(data);
+      const parallelUploads3 = new Upload({
+        client: s3Client,
+        queueSize: 7, // optional concurrency configuration
+        partSize: '5MB', // optional size of each part
+        leavePartsOnError: false, // optional manually handle dropped parts
+        params
+      });
+
+      parallelUploads3.on('httpUploadProgress', progress => {
+        console.log(progress);
+      });
+
+      await parallelUploads3.done();
+      resolve();
     } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'uploadToS3',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
       console.log(`Error uploading file to s3 bucket: ${s3BucketName} `, err);
       reject(err);
     }
