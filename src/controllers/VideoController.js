@@ -71,7 +71,7 @@ exports.deleteVideoById = async (req, res, next) => {
 exports.getTotal = async (req, res, next) => {
   try {
     const { query } = req;
-    const [statusCode, response] = await IssueService.getTotal(query);
+    const [statusCode, response] = await VideoService.getTotal(query);
     res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with getting videos: `, err);
