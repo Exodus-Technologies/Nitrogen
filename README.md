@@ -69,7 +69,6 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - BAMBUSER_APP_KEY_IOS (bambuser appkey for ios devices)
 - BAMBUSER_APP_KEY_ANDROID (bambuser appkey for android devices)
 - BAMBUSER_APP_KEY_WEB (bambuser appkey for desktop apps)
-- BAMBUSTER_APP_API_KEY (bambuster api key for getting broadcast)
 - BAMBUSER_API_KEY (bambuser api key)
 - BAMBUSER_DAID (bambuser daid)
 - BAMBUSER_DASECRET (bambuser dasecret)
