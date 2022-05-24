@@ -9,7 +9,7 @@ import {
   copyS3Object,
   getObjectUrlFromS3
 } from '../aws';
-import { DEFAULT_MIME_TYPE } from '../constants';
+import { DEFAULT_MIME_TYPE, MAX_FILE_SIZE } from '../constants';
 import {
   saveVideoRefToDB,
   updateVideoViews,
@@ -22,10 +22,6 @@ import {
 import { badImplementationRequest, badRequest } from '../response-codes';
 import { fancyTimeFormat } from '../utilities';
 
-const maxFileSize = 800 * 1024 * 1024; //800 MB
-
-const form = formidable({ multiples: true, maxFileSize });
-
 function isEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
@@ -35,6 +31,7 @@ function removeSpaces(str) {
 }
 
 exports.getPayloadFromRequest = async req => {
+  const form = formidable({ multiples: true, maxFileSize: MAX_FILE_SIZE });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
@@ -47,6 +44,12 @@ exports.getPayloadFromRequest = async req => {
       } else {
         resolve(file);
       }
+    });
+    form.on('error', err => {
+      console.log('Error on form parse: ', err);
+    });
+    form.on('end', () => {
+      console.log('Form is finished processing.');
     });
   });
 };
