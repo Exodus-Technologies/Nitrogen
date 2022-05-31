@@ -1,6 +1,6 @@
 # Nitrogen
 
-Microservice for all interactions for bambuser integration which includes: startBroadcast, endBroadcast, and moving archives to AWS S3 bucket and MongoDB (Video Manager)
+Microservice for all interactions for bambuser integration which includes: uploading to S3 directly, updating metadata, and manage datat in S3 bucket and MongoDB (Video Manager)
 
 # Requirements
 
