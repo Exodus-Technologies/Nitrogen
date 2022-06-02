@@ -278,16 +278,49 @@ export const getSubscriptions = async query => {
     const { Subscription } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
+    const sort = query.sort || '-startDate';
     const skipIndex = (page - 1) * limit;
-    return await Subscription.find(
-      { ...query, type: DEFAULT_SUBSCRIPTION_TYPE },
-      queryOps
-    )
-      .sort({ _id: 1 })
-      .limit(limit)
-      .skip(skipIndex)
-      .sort({ endDate: 'asc' })
+
+    const match = {
+      type: DEFAULT_SUBSCRIPTION_TYPE
+    };
+
+    if (query.userId) {
+      match.userId = +query.userId;
+    }
+
+    const aggregate = [
+      {
+        $match: match
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: 'userId',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ];
+    const total = await Subscription.countDocuments(match).exec();
+    const items = await Subscription.aggregate([
+      ...aggregate,
+      {
+        $skip: skipIndex
+      },
+      {
+        $limit: limit
+      }
+    ])
+      .sort(sort)
       .exec();
+    return { items, total };
   } catch (err) {
     console.log('Error getting subscription data from db: ', err);
   }
@@ -397,22 +430,27 @@ export const getSubscriptionStatus = async query => {
         endDate: 'desc'
       })
       .limit(1);
-    let subscriptionStatusText = ''; 
-    let endDateResult = createMoment(); 
+    let subscriptionStatusText = '';
+    let endDateResult = createMoment();
     if (subscriptions.length) {
       const subscription = subscriptions[0];
       const endDate = createMoment(subscription.endDate);
       const currentDate = createMoment();
       const diffInDays = endDate.diff(currentDate, 'days');
       if (Math.sign(diffInDays) > 0) {
-        subscriptionStatusText = `Subscription ends in ${diffInDays} days.`; 
-        endDateResult = endDate; 
+        subscriptionStatusText = `Subscription ends in ${diffInDays} days.`;
+        endDateResult = endDate;
       } else {
-        subscriptionStatusText = `Subscription expired ${diffInDays} days ago.`; 
-        endDate = currentDate; 
+        subscriptionStatusText = `Subscription expired ${diffInDays} days ago.`;
+        endDate = currentDate;
       }
     }
-    return [{subscriptionStatus: subscriptionStatusText, endDate: endDateResult.format("YYYY-MM-DD")}];
+    return [
+      {
+        subscriptionStatus: subscriptionStatusText,
+        endDate: endDateResult.format('YYYY-MM-DD')
+      }
+    ];
   } catch (err) {
     console.log('Error saving subscription data to db: ', err);
   }
