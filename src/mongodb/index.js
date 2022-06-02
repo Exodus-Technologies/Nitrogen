@@ -289,6 +289,10 @@ export const getSubscriptions = async query => {
       match.userId = +query.userId;
     }
 
+    if (query.subscriptionId) {
+      match.subscriptionId = query.subscriptionId;
+    }
+
     const aggregate = [
       {
         $match: match
