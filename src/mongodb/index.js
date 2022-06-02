@@ -9,6 +9,7 @@ import {
   getSubscriptionEndDate,
   createFormattedDate
 } from '../utilities';
+import mongoose from 'mongoose';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -289,8 +290,8 @@ export const getSubscriptions = async query => {
       match.userId = +query.userId;
     }
 
-    if (query.subscriptionId) {
-      match.subscriptionId = query.subscriptionId;
+    if (query._id) {
+      match._id = mongoose.Types.ObjectId(query._id);
     }
 
     const aggregate = [
