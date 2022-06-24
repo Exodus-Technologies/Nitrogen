@@ -71,6 +71,21 @@ const categoryPostValidation = [
     .withMessage('Must provide a category name.')
 ];
 
+const categoryUpdateValidation = [
+  body('categoryId')
+    .isNumeric()
+    .withMessage('Must provide a existing category id.'),
+  body('name')
+    .isString()
+    .optional()
+    .withMessage('Must provide a category name.'),
+  body('description')
+    .isString()
+    .optional()
+    .isLength({ max: 255 })
+    .withMessage('Must provide a category name.')
+];
+
 const categoryIdParamValidation = [
   param('categoryId')
     .isString()
@@ -113,6 +128,7 @@ export {
   videoIdParamValidation,
   categoryQueryValidation,
   categoryPostValidation,
+  categoryUpdateValidation,
   categoryIdParamValidation,
   subscriptionQueryValidation,
   subscriptionPostBodyValidation,
