@@ -50,8 +50,8 @@ exports.updateCategory = async payload => {
       return badRequest(error.message);
     }
   } catch (err) {
-    console.log('Error creating new category: ', err);
-    return badImplementationRequest('Error creating new category.');
+    console.log('Error updating existing category: ', err);
+    return badImplementationRequest('Error updating existing category.');
   }
 };
 
