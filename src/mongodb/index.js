@@ -242,7 +242,7 @@ export const updateCategory = async payload => {
     const category = await Category.findOneAndUpdate(filter, update, options);
     return [null, category];
   } catch (err) {
-    console.log('Error updating video data to db: ', err);
+    console.log('Error updating category data to db: ', err);
   }
 };
 
