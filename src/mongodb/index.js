@@ -264,6 +264,20 @@ export const saveCategoryRefToDB = async payload => {
   }
 };
 
+export const updateCategory = async payload => {
+  try {
+    const { Category } = models;
+    const { categoryId } = payload;
+    const filter = { categoryId };
+    const options = { new: true };
+    const update = { ...payload };
+    const category = await Category.findOneAndUpdate(filter, update, options);
+    return [null, category];
+  } catch (err) {
+    console.log('Error updating category data to db: ', err);
+  }
+};
+
 export const deleteCategoryById = async categoryId => {
   try {
     const { Category } = models;

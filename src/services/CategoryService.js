@@ -3,7 +3,8 @@
 import {
   getCategories,
   saveCategoryRefToDB,
-  deleteCategoryById
+  deleteCategoryById,
+  updateCategory
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -40,15 +41,29 @@ exports.createCategory = async payload => {
   }
 };
 
-exports.deleteCategoryById = async videoId => {
+exports.updateCategory = async payload => {
   try {
-    const deletedCategory = await deleteCategoryById(videoId);
+    const [error, category] = await updateCategory(payload);
+    if (category) {
+      return [200, { message: 'Category updated with success.', category }];
+    } else {
+      return badRequest(error.message);
+    }
+  } catch (err) {
+    console.log('Error updating existing category: ', err);
+    return badImplementationRequest('Error updating existing category.');
+  }
+};
+
+exports.deleteCategoryById = async categoryId => {
+  try {
+    const deletedCategory = await deleteCategoryById(categoryId);
     if (deletedCategory) {
       return [204];
     }
-    return badRequest(`No video found with id provided.`);
+    return badRequest(`No category found with id provided.`);
   } catch (err) {
-    console.log('Error deleting video by id: ', err);
-    return badImplementationRequest('Error deleting video by id.');
+    console.log('Error deleting category by id: ', err);
+    return badImplementationRequest('Error deleting category by id.');
   }
 };

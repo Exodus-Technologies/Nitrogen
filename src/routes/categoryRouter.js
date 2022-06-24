@@ -5,7 +5,8 @@ import { CategoryController } from '../controllers';
 import {
   categoryQueryValidation,
   categoryPostValidation,
-  categoryIdParamValidation
+  categoryIdParamValidation,
+  categoryUpdateValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -24,6 +25,13 @@ router.post(
   categoryPostValidation,
   validationHandler,
   CategoryController.createCategory
+);
+
+router.post(
+  '/video-service/updateCategory',
+  categoryUpdateValidation,
+  validationHandler,
+  CategoryController.updateCategory
 );
 
 router.delete(
