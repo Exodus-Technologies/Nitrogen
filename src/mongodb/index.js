@@ -405,6 +405,6 @@ export const deleteSubscriptionById = async subscriptionId => {
     });
     return deletedSubscription;
   } catch (err) {
-    console.log('Error deleting video by id: ', err);
+    console.log('Error deleting subscription by id: ', err);
   }
 };
