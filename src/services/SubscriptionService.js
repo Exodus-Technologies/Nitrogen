@@ -2,7 +2,8 @@ import {
   getSubscriptions,
   createSubscription,
   updateSubscription,
-  getSubscriptionStatus
+  getSubscriptionStatus,
+  deleteSubscriptionById
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -75,5 +76,18 @@ exports.getSubscriptionStatus = async query => {
     return badImplementationRequest(
       'Error getting remaining time on subscription.'
     );
+  }
+};
+
+exports.deleteSubscriptionById = async subscriptionId => {
+  try {
+    const deletedSubscription = await deleteSubscriptionById(subscriptionId);
+    if (deletedSubscription) {
+      return [204];
+    }
+    return badRequest(`No subscription found with id provided.`);
+  } catch (err) {
+    console.log('Error deleting subscription by id: ', err);
+    return badImplementationRequest('Error deleting subscription by id.');
   }
 };

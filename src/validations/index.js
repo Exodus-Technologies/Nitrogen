@@ -106,7 +106,14 @@ const subscriptionQueryValidation = [
 ];
 
 const subscriptionPostBodyValidation = [
-  body('userId').isNumeric().withMessage('Must provide a valid userId.')
+  body('userId').isNumeric().withMessage('Must provide a valid userId.'),
+  body('email')
+    .isString()
+    .matches(/\S+@\S+\.\S+/)
+    .withMessage('Must provide a existing and valid email.'),
+  body('username')
+    .isString()
+    .withMessage('Must provide your first and last name.')
 ];
 
 const subscriptionStatusQueryValidation = [
@@ -116,8 +123,18 @@ const subscriptionStatusQueryValidation = [
 const subscriptionPutBodyValidation = [
   body('startDate')
     .isString()
+    .optional()
     .withMessage('Must provide a valid startDate for subscription.'),
-  body('userId').isNumeric().withMessage('Must provide a valid userId.')
+  body('userId')
+    .isNumeric()
+    .optional()
+    .withMessage('Must provide a valid userId.')
+];
+
+const subscriptionIdParamValidation = [
+  param('subscriptionId')
+    .isString()
+    .withMessage('Must provide a existing subscription id.')
 ];
 
 export {
@@ -133,5 +150,6 @@ export {
   subscriptionQueryValidation,
   subscriptionPostBodyValidation,
   subscriptionPutBodyValidation,
-  subscriptionStatusQueryValidation
+  subscriptionStatusQueryValidation,
+  subscriptionIdParamValidation
 };

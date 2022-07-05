@@ -52,3 +52,19 @@ exports.getSubscriptionStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteSubscriptionById = async (req, res, next) => {
+  try {
+    const { subscriptionId } = req.params;
+    const [statusCode] = await SubscriptionService.deleteSubscriptionById(
+      subscriptionId
+    );
+    res.status(statusCode).end();
+  } catch (err) {
+    console.log(
+      `Error with deleting subscription by id: ${subscriptionId}: `,
+      err
+    );
+    next(err);
+  }
+};
