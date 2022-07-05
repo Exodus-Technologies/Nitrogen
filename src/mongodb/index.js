@@ -396,3 +396,15 @@ export const getSubscriptionStatus = async query => {
     console.log('Error saving subscription data to db: ', err);
   }
 };
+
+export const deleteSubscriptionById = async subscriptionId => {
+  try {
+    const { Subscription } = models;
+    const deletedSubscription = await Subscription.deleteOne({
+      subscriptionId
+    });
+    return deletedSubscription;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+  }
+};

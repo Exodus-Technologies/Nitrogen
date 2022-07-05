@@ -6,7 +6,8 @@ import {
   subscriptionQueryValidation,
   subscriptionPostBodyValidation,
   subscriptionPutBodyValidation,
-  subscriptionStatusQueryValidation
+  subscriptionStatusQueryValidation,
+  subscriptionIdParamValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -17,6 +18,13 @@ router.get(
   subscriptionQueryValidation,
   validationHandler,
   SubscriptionController.getSubscriptions
+);
+
+router.get(
+  '/video-service/getSubscriptionStatus',
+  subscriptionStatusQueryValidation,
+  validationHandler,
+  SubscriptionController.getSubscriptionStatus
 );
 
 router.post(
@@ -33,11 +41,11 @@ router.put(
   SubscriptionController.updateSubscription
 );
 
-router.get(
-  '/video-service/getSubscriptionStatus',
-  subscriptionStatusQueryValidation,
+router.delete(
+  '/video-service/deleteSubscription/:subscriptionId',
+  subscriptionIdParamValidation,
   validationHandler,
-  SubscriptionController.getSubscriptionStatus
+  SubscriptionController.deleteSubscriptionById
 );
 
 export default router;
