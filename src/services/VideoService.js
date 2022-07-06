@@ -7,9 +7,14 @@ import {
   doesS3ObjectExist,
   deleteVideoByKey,
   copyS3Object,
-  getObjectUrlFromS3
+  getObjectUrlFromS3,
+  deleteThumbnailByKey
 } from '../aws';
-import { DEFAULT_MIME_TYPE, MAX_FILE_SIZE } from '../constants';
+import {
+  VIDEO_MIME_TYPE,
+  THUMBNAIL_MIME_TYPE,
+  MAX_FILE_SIZE
+} from '../constants';
 import {
   saveVideoRefToDB,
   updateVideoViews,
@@ -37,10 +42,19 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
+      if (Object.keys(fields).length === 0) reject('Form is empty.');
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
-        const { filepath, mimetype } = files['file'];
-        resolve({ ...file, filepath, mimetype });
+        const { filepath: videoPath, mimetype: videoType } = files['file'];
+        const { filepath: thumbnailPath, mimetype: thumbnailType } =
+          files['thumbnail'];
+        resolve({
+          ...file,
+          videoPath,
+          videoType,
+          thumbnailPath,
+          thumbnailType
+        });
       } else {
         resolve(file);
       }
@@ -60,17 +74,28 @@ exports.uploadVideo = async archive => {
       title,
       author,
       description,
-      filepath,
+      videoPath,
+      videoType,
+      thumbnailPath,
+      thumbnailType,
       key,
       categories,
-      mimetype,
       avaiableForSale
     } = archive;
-    if (!filepath) {
+    if (!videoPath) {
       return badRequest('File must be provided to upload.');
     }
-    if (filepath && mimetype !== DEFAULT_MIME_TYPE) {
+    if (videoPath && videoType !== VIDEO_MIME_TYPE) {
       return badRequest('File must be a file with a mp4 extention.');
+    }
+
+    if (!thumbnailPath) {
+      return badRequest('Thumbnail must be provided to upload.');
+    }
+    if (thumbnailPath && thumbnailType !== THUMBNAIL_MIME_TYPE) {
+      return badRequest(
+        'Thumbnail must be a file with a image type extention.'
+      );
     }
     const video = await getVideoByTitle(title);
     if (video) {
@@ -80,7 +105,8 @@ exports.uploadVideo = async archive => {
     } else {
       const isBucketAvaiable = await doesS3BucketExist();
       if (isBucketAvaiable) {
-        const { location, duration } = await uploadArchiveToS3Location(archive);
+        const { thumbNailLocation, videoLocation, duration } =
+          await uploadArchiveToS3Location(archive);
         const body = {
           title,
           author,
@@ -91,7 +117,8 @@ exports.uploadVideo = async archive => {
           }),
           avaiableForSale,
           duration: fancyTimeFormat(duration),
-          url: location
+          url: videoLocation,
+          thumbnail: thumbNailLocation
         };
 
         const savedVideo = await saveVideoRefToDB(body);
@@ -304,6 +331,7 @@ exports.deleteVideoById = async videoId => {
     if (video) {
       const { key } = video;
       await deleteVideoByKey(key);
+      await deleteThumbnailByKey(key);
       const deletedVideo = await deleteVideoById(videoId);
       if (deletedVideo) {
         return [204];
