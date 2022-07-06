@@ -97,6 +97,24 @@ exports.uploadVideo = async archive => {
         'Thumbnail must be a file with a image type extention.'
       );
     }
+    if (!title) {
+      return badRequest('Must have file title associated with file upload.');
+    }
+    if (!description) {
+      return badRequest(
+        'Must have file description associated with file upload.'
+      );
+    }
+    if (!author) {
+      return badRequest(
+        'Must have author of file associated with file upload.'
+      );
+    }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
+    }
     const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
