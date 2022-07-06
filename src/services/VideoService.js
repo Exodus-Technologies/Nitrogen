@@ -42,7 +42,7 @@ exports.getPayloadFromRequest = async req => {
       if (err) {
         reject(err);
       }
-      if (Object.keys(fields).length === 0) reject('Form is empty.');
+      if (isEmpty(fields)) reject('Form is empty.');
       const file = { ...fields, key: removeSpaces(fields.title) };
       if (!isEmpty(files)) {
         const { filepath: videoPath, mimetype: videoType } = files['file'];
