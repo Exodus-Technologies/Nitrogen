@@ -6,6 +6,8 @@ export const DEFAULT_VIDEO_FILE_EXTENTION = 'mp4';
 
 export const DEFAULT_THUMBNAIL_FILE_EXTENTION = 'jpeg';
 
+export const DEFAULT_SUBSCRIPTION_TYPE = 'video';
+
 export const VIDEO_MIME_TYPE = 'video/mp4';
 
 export const THUMBNAIL_MIME_TYPE = 'image/jpeg';

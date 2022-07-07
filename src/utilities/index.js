@@ -1,3 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
+
+export const createSubscriptionId = () => {
+  return uuidv4();
+};
+
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
   const hrs = ~~(duration / 3600);
