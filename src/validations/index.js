@@ -92,51 +92,6 @@ const categoryIdParamValidation = [
     .withMessage('Must provide a existing category id.')
 ];
 
-const subscriptionQueryValidation = [
-  query('page')
-    .isString()
-    .not()
-    .isEmpty()
-    .withMessage('Must provide a page for issues.'),
-  query('limit')
-    .isString()
-    .not()
-    .isEmpty()
-    .withMessage('Must provide a limit for issues.')
-];
-
-const subscriptionPostBodyValidation = [
-  body('userId').isNumeric().withMessage('Must provide a valid userId.'),
-  body('email')
-    .isString()
-    .matches(/\S+@\S+\.\S+/)
-    .withMessage('Must provide a existing and valid email.'),
-  body('username')
-    .isString()
-    .withMessage('Must provide your first and last name.')
-];
-
-const subscriptionStatusQueryValidation = [
-  query('userId').isString().withMessage('Must provide a valid userId.')
-];
-
-const subscriptionPutBodyValidation = [
-  body('startDate')
-    .isString()
-    .optional()
-    .withMessage('Must provide a valid startDate for subscription.'),
-  body('userId')
-    .isNumeric()
-    .optional()
-    .withMessage('Must provide a valid userId.')
-];
-
-const subscriptionIdParamValidation = [
-  param('subscriptionId')
-    .isString()
-    .withMessage('Must provide a existing subscription id.')
-];
-
 export {
   validationResult,
   videoQueryValidation,
@@ -146,10 +101,5 @@ export {
   categoryQueryValidation,
   categoryPostValidation,
   categoryUpdateValidation,
-  categoryIdParamValidation,
-  subscriptionQueryValidation,
-  subscriptionPostBodyValidation,
-  subscriptionPutBodyValidation,
-  subscriptionStatusQueryValidation,
-  subscriptionIdParamValidation
+  categoryIdParamValidation
 };
