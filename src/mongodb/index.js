@@ -3,7 +3,7 @@
 import config from '../config';
 import models from '../models';
 import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
-import { createMoment, createFormattedDate } from '../utilities';
+import { createMoment } from '../utilities';
 
 const { dbUser, dbPass, clusterName, dbName } = config.sources.database;
 
@@ -35,13 +35,32 @@ export const getVideos = async query => {
         }
       })
     };
-    const videos = await Video.find(q, queryOps)
-      .sort({ _id: 1 })
+
+    const filter = [];
+    for (const [key, value] of Object.entries(query)) {
+      if (key != 'page' && key != 'limit' && key != 'sort') {
+        filter.push({ [key]: { $regex: value, $options: 'i' } });
+      }
+    }
+    let objectFilter = {};
+    if (filter.length > 0) {
+      objectFilter = {
+        $and: filter
+      };
+    }
+
+    let sortString = '-id';
+    if (query.sort) {
+      sortString = query.sort;
+    }
+
+    const videos = await Video.find(objectFilter, queryOps)
       .limit(limit)
       .skip(skipIndex)
-      .sort({ createdAt: 'desc' })
+      .sort(sortString)
       .lean()
       .exec();
+    const total = await Video.find(objectFilter, queryOps).count();
     return videos.map(video => {
       const isPaid =
         subscriptions && subscriptions.length
@@ -51,11 +70,23 @@ export const getVideos = async query => {
           : false;
       return {
         ...video,
+        total,
+        pages: Math.ceil(total / limit),
         myVideo: video.avaiableForSale && isPaid ? true : false
       };
     });
   } catch (err) {
     console.log('Error getting video data from db: ', err);
+  }
+};
+
+export const getTotal = async () => {
+  try {
+    const { Issue } = models;
+    const total = await Video.count();
+    return total;
+  } catch (err) {
+    console.log('Error getting total video data from db: ', err);
   }
 };
 

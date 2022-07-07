@@ -43,3 +43,5 @@ router.delete(
 );
 
 export default router;
+
+router.get('/video-service/getTotal', VideoController.getTotal);

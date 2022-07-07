@@ -22,7 +22,8 @@ import {
   getVideoByTitle,
   updateVideo,
   deleteVideoById,
-  getVideos
+  getVideos,
+  getTotal
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 import { fancyTimeFormat } from '../utilities';
@@ -359,5 +360,24 @@ exports.deleteVideoById = async videoId => {
   } catch (err) {
     console.log('Error deleting video by id: ', err);
     return badImplementationRequest('Error deleting video by id.');
+  }
+};
+
+exports.getTotal = async query => {
+  try {
+    const videos = await getTotal(query);
+    if (videos) {
+      return [
+        200,
+        {
+          message: 'Successful fetch for get total video with query params.',
+          total_issue: videos
+        }
+      ];
+    }
+    return badRequest(`No video found with selected query params.`);
+  } catch (err) {
+    console.log('Error getting all videos: ', err);
+    return badImplementationRequest('Error getting videos.');
   }
 };
