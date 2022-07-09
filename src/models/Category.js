@@ -12,8 +12,7 @@ const { NODE_ENV } = config;
 //  ============================================
 const categorySchema = new Schema(
   {
-    name: { type: String, required: true },
-    description: { type: String, required: true }
+    name: { type: String, required: true }
   },
   { timestamps: true }
 );
