@@ -64,11 +64,13 @@ const categoryQueryValidation = [
 ];
 
 const categoryPostValidation = [
-  body('name').isString().withMessage('Must provide a category name.'),
-  body('description')
+  body('name').isString().withMessage('Must provide a category name.')
+];
+
+const categoryIdParamValidation = [
+  param('categoryId')
     .isString()
-    .isLength({ max: 255 })
-    .withMessage('Must provide a category name.')
+    .withMessage('Must provide a existing category id.')
 ];
 
 const categoryUpdateValidation = [
@@ -78,18 +80,7 @@ const categoryUpdateValidation = [
   body('name')
     .isString()
     .optional()
-    .withMessage('Must provide a category name.'),
-  body('description')
-    .isString()
-    .optional()
-    .isLength({ max: 255 })
     .withMessage('Must provide a category name.')
-];
-
-const categoryIdParamValidation = [
-  param('categoryId')
-    .isString()
-    .withMessage('Must provide a existing category id.')
 ];
 
 export {
