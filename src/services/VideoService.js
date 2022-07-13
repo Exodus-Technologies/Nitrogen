@@ -3,12 +3,15 @@
 import formidable from 'formidable';
 import {
   uploadArchiveToS3Location,
-  doesS3BucketExist,
+  doesVideoS3BucketExist,
+  doesThumbnailS3BucketExist,
   doesS3ObjectExist,
   deleteVideoByKey,
   copyS3Object,
   getObjectUrlFromS3,
-  deleteThumbnailByKey
+  deleteThumbnailByKey,
+  createVideoS3Bucket,
+  createThumbnailS3Bucket
 } from '../aws';
 import {
   VIDEO_MIME_TYPE,
@@ -83,6 +86,24 @@ exports.uploadVideo = async archive => {
       categories,
       avaiableForSale
     } = archive;
+    if (!title) {
+      return badRequest('Must have file title associated with file upload.');
+    }
+    if (!description) {
+      return badRequest(
+        'Must have file description associated with file upload.'
+      );
+    }
+    if (description && description.length > 255) {
+      return badRequest(
+        'Description must be provided and less than 255 characters long.'
+      );
+    }
+    if (!author) {
+      return badRequest(
+        'Must have author of file associated with file upload.'
+      );
+    }
     if (!videoPath) {
       return badRequest('File must be provided to upload.');
     }
@@ -98,32 +119,18 @@ exports.uploadVideo = async archive => {
         'Thumbnail must be a file with a image type extention.'
       );
     }
-    if (!title) {
-      return badRequest('Must have file title associated with file upload.');
-    }
-    if (!description) {
-      return badRequest(
-        'Must have file description associated with file upload.'
-      );
-    }
-    if (!author) {
-      return badRequest(
-        'Must have author of file associated with file upload.'
-      );
-    }
-    if (description && description.length > 255) {
-      return badRequest(
-        'Description must be provided and less than 255 characters long.'
-      );
-    }
     const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
         `Video with the title ${title} provide already exists.`
       );
     } else {
-      const isBucketAvaiable = await doesS3BucketExist();
-      if (isBucketAvaiable) {
+      const isVideoBucketAvaiable = await doesVideoS3BucketExist();
+      const isThumbnailBucketAvaiable = await doesThumbnailS3BucketExist();
+      if (!isVideoBucketAvaiable && !isThumbnailBucketAvaiable) {
+        await createVideoS3Bucket();
+        await createThumbnailS3Bucket();
+      } else {
         const { thumbNailLocation, videoLocation, duration } =
           await uploadArchiveToS3Location(archive);
         const body = {

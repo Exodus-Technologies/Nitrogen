@@ -6,7 +6,8 @@ import {
   ListBucketsCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
-  CopyObjectCommand
+  CopyObjectCommand,
+  CreateBucketCommand
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getVideoDurationInSeconds } from 'get-video-duration';
@@ -34,6 +35,50 @@ const s3Client = new S3Client({
   }
 });
 
+export const createVideoS3Bucket = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3VideoBucketName
+      };
+      await s3Client.send(new CreateBucketCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'createS3Bucket',
+        requestId,
+        cfId,
+        bucketName: s3VideoBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const createThumbnailS3Bucket = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3ThumbnailBucketName
+      };
+      await s3Client.send(new CreateBucketCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'createS3Bucket',
+        requestId,
+        cfId,
+        bucketName: s3ThumbnailBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
 const getFileContentFromPath = (path, isVideo = true) => {
   return new Promise((resolve, reject) => {
     try {
@@ -55,7 +100,7 @@ const getFileContentFromPath = (path, isVideo = true) => {
   });
 };
 
-export const doesS3BucketExist = () => {
+export const doesVideoS3BucketExist = () => {
   return new Promise(async (resolve, reject) => {
     try {
       const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
@@ -67,6 +112,29 @@ export const doesS3BucketExist = () => {
         message: 'doesS3BucketExist',
         requestId,
         cfId,
+        bucketName: s3IssueBucketName,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const doesThumbnailS3BucketExist = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
+      const bucket = Buckets.some(
+        bucket => bucket.Name === s3ThumbnailBucketName
+      );
+      resolve(bucket);
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'doesS3BucketExist',
+        requestId,
+        cfId,
+        bucketName: s3CoverImageBucketName,
         extendedRequestId
       });
       reject(err);
