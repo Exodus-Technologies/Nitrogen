@@ -20,10 +20,6 @@ const videoQueryValidation = [
     .isString()
     .withMessage('Must provide a existing video title.')
     .optional(),
-  query('author')
-    .isString()
-    .withMessage('Must provide a valid video author.')
-    .optional(),
   query('categories')
     .isString()
     .withMessage('Must provide a category for video to match with.')

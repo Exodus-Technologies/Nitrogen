@@ -40,7 +40,9 @@ function removeSpaces(str) {
 }
 
 exports.getPayloadFromRequest = async req => {
-  const form = formidable({ multiples: true, maxFileSize: MAX_FILE_SIZE });
+  const form = new formidable.IncomingForm();
+  form.multiples = true;
+  form.maxFileSize = MAX_FILE_SIZE;
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
@@ -76,7 +78,6 @@ exports.uploadVideo = async archive => {
   try {
     const {
       title,
-      author,
       description,
       videoPath,
       videoType,
@@ -97,11 +98,6 @@ exports.uploadVideo = async archive => {
     if (description && description.length > 255) {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
-      );
-    }
-    if (!author) {
-      return badRequest(
-        'Must have author of file associated with file upload.'
       );
     }
     if (!videoPath) {
@@ -135,7 +131,6 @@ exports.uploadVideo = async archive => {
           await uploadArchiveToS3Location(archive);
         const body = {
           title,
-          author,
           description,
           key,
           ...(categories && {
@@ -216,7 +211,6 @@ exports.updateVideo = async archive => {
   try {
     const {
       title,
-      author,
       description,
       filepath,
       categories,
@@ -245,7 +239,6 @@ exports.updateVideo = async archive => {
           title,
           videoId,
           description,
-          author,
           key: newKey,
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
@@ -263,7 +256,6 @@ exports.updateVideo = async archive => {
               title,
               videoId,
               description,
-              author,
               url: s3Location,
               avaiableForSale
             }
@@ -288,7 +280,6 @@ exports.updateVideo = async archive => {
             videoId,
             description,
             key: newKey,
-            author,
             duration: fancyTimeFormat(duration),
             ...(categories && {
               categories: categories.split(',').map(item => item.trim())
@@ -305,7 +296,6 @@ exports.updateVideo = async archive => {
                 title,
                 videoId,
                 description,
-                author,
                 url: location,
                 avaiableForSale
               }
@@ -319,7 +309,6 @@ exports.updateVideo = async archive => {
           videoId,
           description,
           key: newKey,
-          author,
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
@@ -335,7 +324,6 @@ exports.updateVideo = async archive => {
               title,
               videoId,
               description,
-              author,
               url,
               avaiableForSale
             }

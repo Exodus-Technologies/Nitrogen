@@ -15,3 +15,5 @@ export const THUMBNAIL_MIME_TYPE = 'image/jpeg';
 export const DEFAULT_TIME_FORMAT = 'YYYY-MM-DD[T]HH:mm:ss';
 
 export const MAX_FILE_SIZE = 1000 * 1024 * 1024; //1000 MB
+
+export const AUTHOR = 'Sheen Magazine';
