@@ -252,8 +252,8 @@ const uploadVideoToS3 = (fileContent, key) => {
     try {
       const parallelUploads3 = new Upload({
         client: s3Client,
-        queueSize: 7, // optional concurrency configuration
-        partSize: '5MB', // optional size of each part
+        queueSize: 10, // optional concurrency configuration
+        partSize: '15MB', // optional size of each part
         leavePartsOnError: false, // optional manually handle dropped parts
         params
       });
