@@ -3,6 +3,7 @@
 import mongoose from 'mongoose';
 import config from '../config';
 import mongooseSequence from 'mongoose-sequence';
+import { AUTHOR } from '../constants';
 
 const { Schema } = mongoose;
 const autoIncrement = mongooseSequence(mongoose);
@@ -17,7 +18,7 @@ const videoSchema = new Schema(
     url: { type: String, required: true },
     description: { type: String, required: true },
     totalViews: { type: Number, default: 0 },
-    author: { type: String, required: true },
+    author: { type: String, default: AUTHOR },
     key: { type: String, required: true },
     avaiableForSale: { type: Boolean, default: false },
     thumbnail: { type: String },
