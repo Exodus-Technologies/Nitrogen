@@ -40,9 +40,11 @@ function removeSpaces(str) {
 }
 
 exports.getPayloadFromRequest = async req => {
-  const form = new formidable.IncomingForm();
-  form.multiples = true;
-  form.maxFileSize = MAX_FILE_SIZE;
+  const form = formidable({
+    multiples: true,
+    maxFileSize: MAX_FILE_SIZE
+  });
+
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) {
