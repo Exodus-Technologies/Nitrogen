@@ -32,3 +32,16 @@ exports.webHookCallback = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.migrateLivestream = async (req, res, next) => {
+  try {
+    const { broadcastId } = req.body;
+    const [statusCode, response] = await BambuserService.migrateLivestream(
+      broadcastId
+    );
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(`Error with moving livestream data to s3: `, err);
+    next(err);
+  }
+};

@@ -8,6 +8,8 @@ import {
   getActiveBroadcast
 } from '../mongodb';
 
+import { getBroadCastById, getDownloadLink } from '../bambuser';
+
 const { platfromKeys } = config.sources.bambuser;
 
 exports.getApplicationId = async query => {
@@ -33,43 +35,10 @@ exports.getApplicationId = async query => {
 exports.webHookCallback = async payload => {
   try {
     const broadcast = await getActiveBroadcast();
-    if (broadcast) {
-      const { broadcastId } = broadcast;
-      const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
-      if (updatedBroadcast) {
-        const { broadcastId, isActive } = updatedBroadcast;
-        return [
-          200,
-          {
-            message: 'Broadcast metadata was updated success.',
-            broadcast: {
-              broadcastId,
-              isActive
-            }
-          }
-        ];
-      } else {
-        console.log(
-          `Unable to update broadcast data from the bambuser webhook.`
-        );
-        return badRequest(
-          `Unable to update broadcast data from the bambuser webhook.`
-        );
-      }
-    } else {
+    if (!broadcast) {
       const savedBroadcast = await saveBroadcastToDb(payload);
       if (savedBroadcast) {
-        const { broadcastId, isActive } = savedBroadcast;
-        return [
-          200,
-          {
-            message: 'Broadcast metadata was saved with success.',
-            broadcast: {
-              broadcastId,
-              isActive
-            }
-          }
-        ];
+        return [200];
       } else {
         console.log(`Unable to save broadcast data from the bambuser webhook.`);
         return badRequest(
@@ -77,8 +46,31 @@ exports.webHookCallback = async payload => {
         );
       }
     }
+    const { broadcastId } = broadcast;
+    const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
+    if (updatedBroadcast) {
+      return [200];
+    } else {
+      console.log(`Unable to update broadcast data from the bambuser webhook.`);
+      return badRequest(
+        `Unable to update broadcast data from the bambuser webhook.`
+      );
+    }
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);
     return badImplementationRequest('Error executing webhook callback.');
+  }
+};
+
+exports.migrateLivestream = async broadcastId => {
+  try {
+    const broadcast = await getBroadCastById(broadcastId);
+    const link = await getDownloadLink(broadcastId);
+    const { preview: thumbnail } = broadcast;
+    console.log(link, broadcast);
+    return [200];
+  } catch (err) {
+    console.log(`Error with moving livestream data to s3: `, err);
+    return badImplementationRequest('Error with moving livestream data to s3.');
   }
 };

@@ -1,5 +1,8 @@
 import express from 'express';
-import { appIdQueryValidation } from '../validations';
+import {
+  appIdQueryValidation,
+  broadCastIdBodyValidation
+} from '../validations';
 import { validationHandler, cache } from '../middlewares';
 import { BambuserController } from '../controllers';
 
@@ -17,6 +20,13 @@ router.get(
 router.post(
   '/video-service/webHookCallback',
   BambuserController.webHookCallback
+);
+
+router.post(
+  '/video-service/migrateLivestream',
+  broadCastIdBodyValidation,
+  validationHandler,
+  BambuserController.migrateLivestream
 );
 
 export default router;

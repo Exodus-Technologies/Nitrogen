@@ -82,7 +82,7 @@ export const getVideos = async query => {
 
 export const getTotal = async () => {
   try {
-    const { Issue } = models;
+    const { Video } = models;
     const total = await Video.count();
     return total;
   } catch (err) {
@@ -204,6 +204,7 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     const options = { new: true };
     const update = {
       ...livestream,
+      playerUrl: payload.resourceUri,
       ...(collection && { collectionType: collection }),
       ...(type === 'archived' && { isActive: false })
     };
