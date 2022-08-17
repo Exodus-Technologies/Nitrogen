@@ -23,10 +23,10 @@ router.post(
 );
 
 router.post(
-  '/video-service/migrateLivestream',
+  '/video-service/uploadLivestream',
   broadCastIdBodyValidation,
   validationHandler,
-  BambuserController.migrateLivestream
+  BambuserController.uploadLivestream
 );
 
 export default router;

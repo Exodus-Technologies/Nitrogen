@@ -33,10 +33,10 @@ exports.webHookCallback = async (req, res, next) => {
   }
 };
 
-exports.migrateLivestream = async (req, res, next) => {
+exports.uploadLivestream = async (req, res, next) => {
   try {
     const { broadcastId } = req.body;
-    const [statusCode, response] = await BambuserService.migrateLivestream(
+    const [statusCode, response] = await BambuserService.uploadLivestream(
       broadcastId
     );
     res.status(statusCode).send(response);

@@ -110,7 +110,7 @@ export const getVideoById = async videoId => {
   }
 };
 
-export const saveVideoRefToDB = async payload => {
+export const createVideo = async payload => {
   try {
     const { Video } = models;
     const video = new Video(payload);

@@ -1,3 +1,8 @@
+'use strict';
+
+import fs from 'fs';
+import { getVideoDurationInSeconds } from 'get-video-duration';
+
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
   const hrs = ~~(duration / 3600);
@@ -14,4 +19,59 @@ export const fancyTimeFormat = duration => {
   ret += '' + mins + ':' + (secs < 10 ? '0' : '');
   ret += '' + secs;
   return ret;
+};
+
+export const getFileContentFromPath = (path, isVideo = true) => {
+  return new Promise((resolve, reject) => {
+    try {
+      fs.readFile(path, async (err, buffer) => {
+        const content = { file: buffer };
+        if (err) {
+          reject(err);
+        }
+        if (isVideo) {
+          const duration = await getVideoDurationInSeconds(path);
+          content['duration'] = duration;
+        }
+        resolve(content);
+      });
+    } catch (err) {
+      console.log(`Error getting file: ${path} `, err);
+      reject(err);
+    }
+  });
+};
+
+export const getFileContentFromURL = (url, isVideo = true) => {
+  return new Promise((resolve, reject) => {
+    const http = require('http'),
+      https = require('https');
+
+    let client = http;
+
+    if (url.toString().indexOf('https') === 0) {
+      client = https;
+    }
+
+    client
+      .get(url, resp => {
+        const chunks = [];
+
+        resp.on('data', chunk => {
+          chunks.push(chunk);
+        });
+        resp.on('end', async () => {
+          const content = { file: Buffer.concat(chunks) };
+          if (isVideo) {
+            const duration = await getVideoDurationInSeconds(url);
+            content['duration'] = duration;
+          }
+          resolve(content);
+        });
+      })
+      .on('error', err => {
+        console.log(`Error getting file from url: ${url} `, err);
+        reject(err);
+      });
+  });
 };

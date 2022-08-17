@@ -8,7 +8,7 @@ import {
   getActiveBroadcast
 } from '../mongodb';
 
-import { getBroadCastById, getDownloadLink } from '../bambuser';
+import { deleteBroadCastById, uploadLivestream } from '../bambuser';
 
 const { platfromKeys } = config.sources.bambuser;
 
@@ -50,11 +50,17 @@ exports.webHookCallback = async payload => {
     const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
     if (updatedBroadcast) {
       return [200];
-    } else {
-      console.log(`Unable to update broadcast data from the bambuser webhook.`);
-      return badRequest(
-        `Unable to update broadcast data from the bambuser webhook.`
+    } else if (payload.type === 'archived') {
+      const [error, livestream] = await uploadLivestream(broadcastId);
+      if (livestream) {
+        await deleteBroadCastById(broadcastId);
+        return [200];
+      }
+      console.log(
+        'Error with migrating livetsream data to s3: ',
+        error.message
       );
+      return [200];
     }
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);
@@ -62,13 +68,21 @@ exports.webHookCallback = async payload => {
   }
 };
 
-exports.migrateLivestream = async broadcastId => {
+exports.uploadLivestream = async broadcastId => {
   try {
-    const broadcast = await getBroadCastById(broadcastId);
-    const link = await getDownloadLink(broadcastId);
-    const { preview: thumbnail } = broadcast;
-    console.log(link, broadcast);
-    return [200];
+    const [error, livestream] = await uploadLivestream(broadcastId);
+    if (livestream) {
+      await deleteBroadCastById(broadcastId);
+      return [
+        200,
+        {
+          message: 'Livestream data was uploaded to s3 with success',
+          livestream
+        }
+      ];
+    } else {
+      return badRequest(error.message);
+    }
   } catch (err) {
     console.log(`Error with moving livestream data to s3: `, err);
     return badImplementationRequest('Error with moving livestream data to s3.');

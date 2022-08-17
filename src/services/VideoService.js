@@ -19,7 +19,7 @@ import {
   MAX_FILE_SIZE
 } from '../constants';
 import {
-  saveVideoRefToDB,
+  createVideo,
   updateVideoViews,
   getVideoById,
   getVideoByTitle,
@@ -144,12 +144,9 @@ exports.uploadVideo = async archive => {
           thumbnail: thumbNailLocation
         };
 
-        const savedVideo = await saveVideoRefToDB(body);
-        if (savedVideo) {
-          return [
-            200,
-            { message: 'Video uploaded to s3 with success', video: savedVideo }
-          ];
+        const video = await createVideo(body);
+        if (video) {
+          return [200, { message: 'Video uploaded to s3 with success', video }];
         } else {
           return badRequest('Unable to save video metadata.');
         }
