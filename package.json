@@ -35,6 +35,7 @@
     "crypto-js": "^4.1.1",
     "express": "^4.17.2",
     "express-validator": "^6.14.0",
+    "follow-redirects": "^1.15.1",
     "formidable": "^2.0.1",
     "get-video-duration": "^4.0.0",
     "helmet": "^5.0.2",

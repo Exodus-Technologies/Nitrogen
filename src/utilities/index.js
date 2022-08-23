@@ -1,7 +1,10 @@
 'use strict';
 
 import fs from 'fs';
+import path from 'path';
+import { cwd } from 'process';
 import { getVideoDurationInSeconds } from 'get-video-duration';
+const { http, https } = require('follow-redirects');
 
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
@@ -42,11 +45,39 @@ export const getFileContentFromPath = (path, isVideo = true) => {
   });
 };
 
-export const getFileContentFromURL = (url, isVideo = true) => {
+export const getContentFromURL = url => {
   return new Promise((resolve, reject) => {
-    const http = require('http'),
-      https = require('https');
+    let client = http;
 
+    if (url.toString().indexOf('https') === 0) {
+      client = https;
+    }
+
+    const request = client.get(url, response => {
+      if (response.statusCode === 200) {
+        const chunks = [];
+        response.on('data', chunk => {
+          chunks.push(chunk);
+        });
+        response.on('end', async () => {
+          const content = { file: Buffer.concat(chunks) };
+          resolve(content);
+        });
+      } else {
+        reject(
+          `Server responded with ${response.statusCode}: ${response.statusMessage}`
+        );
+      }
+    });
+
+    request.on('error', err => {
+      reject(err.message);
+    });
+  });
+};
+
+export const getVideoContentFromURL = url => {
+  return new Promise((resolve, reject) => {
     let client = http;
 
     if (url.toString().indexOf('https') === 0) {
@@ -60,17 +91,16 @@ export const getFileContentFromURL = (url, isVideo = true) => {
         resp.on('data', chunk => {
           chunks.push(chunk);
         });
+
         resp.on('end', async () => {
           const content = { file: Buffer.concat(chunks) };
-          if (isVideo) {
-            const duration = await getVideoDurationInSeconds(url);
-            content['duration'] = duration;
-          }
+          const duration = await getVideoDurationInSeconds(url);
+          content['duration'] = duration;
           resolve(content);
         });
       })
       .on('error', err => {
-        console.log(`Error getting file from url: ${url} `, err);
+        console.log(`Error getting video data from url: ${url} `, err);
         reject(err);
       });
   });

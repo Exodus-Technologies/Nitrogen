@@ -8,7 +8,7 @@ import {
   doesS3ObjectExist,
   deleteVideoByKey,
   copyS3Object,
-  getObjectUrlFromS3,
+  getVideoURLFromS3,
   deleteThumbnailByKey,
   createVideoS3Bucket,
   createThumbnailS3Bucket
@@ -233,7 +233,7 @@ exports.updateVideo = async archive => {
       const newKey = removeSpaces(title);
       if (newKey !== video.key) {
         await copyS3Object(video.key, newKey);
-        const s3Location = getObjectUrlFromS3(newKey);
+        const s3Location = getVideoURLFromS3(newKey);
         const body = {
           title,
           videoId,
@@ -302,7 +302,7 @@ exports.updateVideo = async archive => {
           ];
         }
       } else {
-        const url = await getObjectUrlFromS3(newKey);
+        const url = await getVideoURLFromS3(newKey);
         const body = {
           title,
           videoId,

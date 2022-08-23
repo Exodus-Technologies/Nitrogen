@@ -69,8 +69,8 @@ const categoryIdParamValidation = [
     .withMessage('Must provide a existing category id.')
 ];
 
-const broadCastIdBodyValidation = [
-  body('broadcastId').isString().withMessage('Must provide a broadcast id.')
+const broadCastIdParamValidation = [
+  param('broadcastId').isNumeric().withMessage('Must provide a broadcast id.')
 ];
 
 const categoryUpdateValidation = [
@@ -93,5 +93,5 @@ export {
   categoryPostValidation,
   categoryUpdateValidation,
   categoryIdParamValidation,
-  broadCastIdBodyValidation
+  broadCastIdParamValidation
 };

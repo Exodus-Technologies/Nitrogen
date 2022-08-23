@@ -215,6 +215,18 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
   }
 };
 
+export const deleteBroadcast = async broadcastId => {
+  try {
+    const { Broadcast } = models;
+    const deletedBroadcast = await Broadcast.deleteOne({
+      'payload.id': broadcastId
+    });
+    return deletedBroadcast;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
+  }
+};
+
 export const getCategories = async query => {
   try {
     const { Category } = models;

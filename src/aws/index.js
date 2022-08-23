@@ -165,12 +165,12 @@ export const copyS3Object = (oldKey, newKey) => {
   });
 };
 
-export const getObjectUrlFromS3 = (fileName, isVideo = true) => {
-  const bucketName = isVideo ? s3VideoBucketName : s3ThumbnailBucketName;
-  const extension = isVideo
-    ? DEFAULT_VIDEO_FILE_EXTENTION
-    : DEFAULT_THUMBNAIL_FILE_EXTENTION;
-  return `https://${bucketName}.s3.amazonaws.com/${fileName}.${extension}`;
+export const getVideoURLFromS3 = fileName => {
+  return `https://${s3VideoBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
+};
+
+export const getThumbnailURLFromS3 = fileName => {
+  return `https://${s3ThumbnailBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
 };
 
 export const deleteVideoByKey = key => {
@@ -312,8 +312,8 @@ export const uploadArchiveToS3Location = async archive => {
       );
       await uploadVideoToS3(videoFile, key);
       await uploadThumbnailToS3(thumbnailFile, key);
-      const videoLocation = getObjectUrlFromS3(key);
-      const thumbNailLocation = getObjectUrlFromS3(key, false);
+      const videoLocation = getVideoURLFromS3(key);
+      const thumbNailLocation = getThumbnailExtention(key);
       resolve({ thumbNailLocation, videoLocation, duration: videoDuration });
     } catch (err) {
       console.log(`Error uploading archives to s3 buckets`, err);
