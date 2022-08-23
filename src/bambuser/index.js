@@ -53,21 +53,26 @@ export const deleteBroadCastById = async broadcastId => {
   }
 };
 
-export const getDownloadLink = async broadcastId => {
-  try {
-    const v2Instance = axiosClient.getV2();
-    const response = await v2Instance({
-      url: `/${broadcastId}/downloads`,
-      method: 'POST',
-      data: JSON.stringify({ format: 'mp4-h264' })
-    });
+export const getDownloadLink = broadcastId => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const v2Instance = axiosClient.getV2();
+      const response = await v2Instance({
+        url: `/${broadcastId}/downloads`,
+        method: 'POST',
+        data: JSON.stringify({ format: 'mp4-h264' })
+      });
 
-    const { data: link } = response;
+      const { data: link } = response;
 
-    return link;
-  } catch (err) {
-    console.log('Error getting broadcast download link from bambuser: ', err);
-  }
+      if (link.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
+        resolve(link);
+      }
+    } catch (err) {
+      console.log('Error getting broadcast download link from bambuser: ', err);
+      reject(err);
+    }
+  });
 };
 
 export const uploadLivestream = async broadcastId => {
@@ -75,38 +80,34 @@ export const uploadLivestream = async broadcastId => {
     const broadcast = await getBroadCastById(broadcastId);
     const link = await getDownloadLink(broadcastId);
     const { preview, title } = broadcast;
-    const { url, status } = link;
-    if (status === DOWNLOAD_LINK_SUCCESS_STATUS) {
-      const { file: videoFile, duration: videoDuration } =
-        await getVideoContentFromURL(url);
-      const { file: thumbnailFile } = await getContentFromURL(preview);
-      const currentDate = moment(new Date()).format('MM-DD-YYYY');
-      const key = title
-        ? `${title}-${currentDate}`
-        : `livestream-${currentDate}`;
+    const { url } = link;
+    const { file: videoFile, duration: videoDuration } =
+      await getVideoContentFromURL(url);
+    const { file: thumbnailFile } = await getContentFromURL(preview);
+    const currentDate = moment(new Date()).format('MM-DD-YYYY');
+    const key = title ? `${title}-${currentDate}` : `livestream-${currentDate}`;
 
-      await uploadVideoToS3(videoFile, key);
-      await uploadThumbnailToS3(thumbnailFile, key);
-      const videoLocation = getVideoURLFromS3(key);
-      const thumbNailLocation = getThumbnailURLFromS3(key);
+    await uploadVideoToS3(videoFile, key);
+    await uploadThumbnailToS3(thumbnailFile, key);
+    const videoLocation = getVideoURLFromS3(key);
+    const thumbNailLocation = getThumbnailURLFromS3(key);
 
-      const body = {
-        title,
-        description: `Livestream that was created on ${currentDate}`,
-        key,
-        broadcastId,
-        categories: ['Livestream'],
-        duration: fancyTimeFormat(videoDuration),
-        url: videoLocation,
-        thumbnail: thumbNailLocation
-      };
+    const body = {
+      title,
+      description: `Livestream that was created on ${currentDate}`,
+      key,
+      broadcastId,
+      categories: ['Livestream'],
+      duration: fancyTimeFormat(videoDuration),
+      url: videoLocation,
+      thumbnail: thumbNailLocation
+    };
 
-      const video = await createVideo(body);
-      if (video) {
-        return [null, video];
-      } else {
-        return [Error('Unable to save video metadata.')];
-      }
+    const video = await createVideo(body);
+    if (video) {
+      return [null, video];
+    } else {
+      return [Error('Unable to save video metadata.')];
     }
   } catch (err) {
     console.log(`Error with moving livestream data to s3: `, err);

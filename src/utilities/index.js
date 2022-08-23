@@ -1,10 +1,8 @@
 'use strict';
 
 import fs from 'fs';
-import path from 'path';
-import { cwd } from 'process';
 import { getVideoDurationInSeconds } from 'get-video-duration';
-const { http, https } = require('follow-redirects');
+import { http, https } from 'follow-redirects';
 
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
@@ -53,19 +51,19 @@ export const getContentFromURL = url => {
       client = https;
     }
 
-    const request = client.get(url, response => {
-      if (response.statusCode === 200) {
+    const request = client.get(url, resp => {
+      if (resp.statusCode === 200) {
         const chunks = [];
-        response.on('data', chunk => {
+        resp.on('data', chunk => {
           chunks.push(chunk);
         });
-        response.on('end', async () => {
+        resp.on('end', async () => {
           const content = { file: Buffer.concat(chunks) };
           resolve(content);
         });
       } else {
         reject(
-          `Server responded with ${response.statusCode}: ${response.statusMessage}`
+          `Server responded with ${resp.statusCode}: ${resp.statusMessage}`
         );
       }
     });
