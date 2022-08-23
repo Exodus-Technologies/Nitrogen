@@ -69,3 +69,25 @@ exports.webHookCallback = async payload => {
     return badImplementationRequest('Error executing webhook callback.');
   }
 };
+
+exports.uploadLivestream = async broadcastId => {
+  try {
+    const [error, livestream] = await uploadLivestream(broadcastId);
+    if (livestream) {
+      await deleteBroadCastById(broadcastId);
+      await deleteBroadcast(broadcastId);
+      return [
+        200,
+        {
+          message: 'Livestream data was uploaded to s3 with success',
+          livestream
+        }
+      ];
+    } else {
+      return badRequest(error.message);
+    }
+  } catch (err) {
+    console.log(`Error with moving livestream data to s3: `, err);
+    return badImplementationRequest('Error with moving livestream data to s3.');
+  }
+};

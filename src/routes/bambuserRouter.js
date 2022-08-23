@@ -22,4 +22,11 @@ router.post(
   BambuserController.webHookCallback
 );
 
+router.post(
+  '/video-service/uploadLivestream',
+  broadCastIdBodyValidation,
+  validationHandler,
+  BambuserController.uploadLivestream
+);
+
 export default router;
