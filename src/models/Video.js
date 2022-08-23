@@ -13,17 +13,17 @@ const { NODE_ENV } = config;
 //  ============================================
 const videoSchema = new Schema(
   {
-    title: { type: String, required: true },
+    title: { type: String },
     broadcastId: { type: String },
     url: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String },
     totalViews: { type: Number, default: 0 },
     author: { type: String, default: AUTHOR },
     key: { type: String, required: true },
     avaiableForSale: { type: Boolean, default: false },
     thumbnail: { type: String },
-    duration: { type: String, required: true },
-    categories: { type: [String], required: true }
+    duration: { type: String },
+    categories: { type: [String] }
   },
   { timestamps: true }
 );

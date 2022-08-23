@@ -17,3 +17,5 @@ export const DEFAULT_TIME_FORMAT = 'YYYY-MM-DD[T]HH:mm:ss';
 export const MAX_FILE_SIZE = 200 * 1024 * 1024 * 1024;
 
 export const AUTHOR = 'Sheen Magazine';
+
+export const DOWNLOAD_LINK_SUCCESS_STATUS = 'ok';

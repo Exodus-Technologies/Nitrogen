@@ -82,7 +82,7 @@ export const getVideos = async query => {
 
 export const getTotal = async () => {
   try {
-    const { Issue } = models;
+    const { Video } = models;
     const total = await Video.count();
     return total;
   } catch (err) {
@@ -110,7 +110,7 @@ export const getVideoById = async videoId => {
   }
 };
 
-export const saveVideoRefToDB = async payload => {
+export const createVideo = async payload => {
   try {
     const { Video } = models;
     const video = new Video(payload);
@@ -204,6 +204,7 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     const options = { new: true };
     const update = {
       ...livestream,
+      playerUrl: payload.resourceUri,
       ...(collection && { collectionType: collection }),
       ...(type === 'archived' && { isActive: false })
     };
@@ -211,6 +212,18 @@ export const updateBroadcastInDB = async (broadcastId, livestream) => {
     return broadcast;
   } catch (err) {
     console.log('Error updating broadcast status: ', err);
+  }
+};
+
+export const deleteBroadcast = async broadcastId => {
+  try {
+    const { Broadcast } = models;
+    const deletedBroadcast = await Broadcast.deleteOne({
+      'payload.id': broadcastId
+    });
+    return deletedBroadcast;
+  } catch (err) {
+    console.log('Error deleting video by id: ', err);
   }
 };
 

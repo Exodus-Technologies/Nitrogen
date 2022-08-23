@@ -5,8 +5,11 @@ import { badImplementationRequest, badRequest } from '../response-codes';
 import {
   saveBroadcastToDb,
   updateBroadcastInDB,
-  getActiveBroadcast
+  getActiveBroadcast,
+  deleteBroadcast
 } from '../mongodb';
+
+import { deleteBroadCastById, uploadLivestream } from '../bambuser';
 
 const { platfromKeys } = config.sources.bambuser;
 
@@ -33,49 +36,33 @@ exports.getApplicationId = async query => {
 exports.webHookCallback = async payload => {
   try {
     const broadcast = await getActiveBroadcast();
-    if (broadcast) {
-      const { broadcastId } = broadcast;
-      const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
-      if (updatedBroadcast) {
-        const { broadcastId, isActive } = updatedBroadcast;
-        return [
-          200,
-          {
-            message: 'Broadcast metadata was updated success.',
-            broadcast: {
-              broadcastId,
-              isActive
-            }
-          }
-        ];
-      } else {
-        console.log(
-          `Unable to update broadcast data from the bambuser webhook.`
-        );
-        return badRequest(
-          `Unable to update broadcast data from the bambuser webhook.`
-        );
-      }
-    } else {
+    if (!broadcast) {
       const savedBroadcast = await saveBroadcastToDb(payload);
       if (savedBroadcast) {
-        const { broadcastId, isActive } = savedBroadcast;
-        return [
-          200,
-          {
-            message: 'Broadcast metadata was saved with success.',
-            broadcast: {
-              broadcastId,
-              isActive
-            }
-          }
-        ];
+        return [200];
       } else {
         console.log(`Unable to save broadcast data from the bambuser webhook.`);
         return badRequest(
           `Unable to save broadcast data from the bambuser webhook.`
         );
       }
+    }
+    const { broadcastId } = broadcast;
+    const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
+    if (updatedBroadcast) {
+      return [200];
+    } else if (payload.type === 'archived') {
+      const [error, livestream] = await uploadLivestream(broadcastId);
+      if (livestream) {
+        await deleteBroadCastById(broadcastId);
+        await deleteBroadcast(broadcastId);
+        return [200];
+      }
+      console.log(
+        'Error with migrating livetsream data to s3: ',
+        error.message
+      );
+      return [200];
     }
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);

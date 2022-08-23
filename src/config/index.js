@@ -33,7 +33,8 @@ const config = {
         ios: process.env.BAMBUSER_APP_KEY_IOS,
         android: process.env.BAMBUSER_APP_KEY_ANDROID,
         web: process.env.BAMBUSER_APP_KEY_WEB
-      }
+      },
+      broadcastURL: process.env.BAMBUSER_BROADCAST_URL
     }
   }
 };
