@@ -142,7 +142,29 @@ export const doesS3ObjectExist = key => {
   });
 };
 
-export const copyS3Object = (oldKey, newKey) => {
+export const doesThumbnailObjectExist = key => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3ThumbnailBucketName,
+        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
+      };
+      const s3Object = await s3Client.send(new HeadObjectCommand(params));
+      resolve(s3Object);
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'doesThumbnailObjectExist',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const copyVideoObject = (oldKey, newKey) => {
   return new Promise(async (resolve, reject) => {
     try {
       const params = {
@@ -155,7 +177,30 @@ export const copyS3Object = (oldKey, newKey) => {
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({
-        message: 'copyS3Object',
+        message: 'copyVideoObject',
+        requestId,
+        cfId,
+        extendedRequestId
+      });
+      reject(err);
+    }
+  });
+};
+
+export const copyThumbnailObject = (oldKey, newKey) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const params = {
+        Bucket: s3ThumbnailBucketName,
+        CopySource: `${s3ThumbnailBucketName}/${oldKey}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`,
+        Key: `${newKey}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
+      };
+      await s3Client.send(new CopyObjectCommand(params));
+      resolve();
+    } catch (err) {
+      const { requestId, cfId, extendedRequestId } = err.$metadata;
+      console.log({
+        message: 'copyThumbnailObject',
         requestId,
         cfId,
         extendedRequestId

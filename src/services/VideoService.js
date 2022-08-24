@@ -7,11 +7,14 @@ import {
   doesThumbnailS3BucketExist,
   doesS3ObjectExist,
   deleteVideoByKey,
-  copyS3Object,
+  copyVideoObject,
+  copyThumbnailObject,
   getVideoURLFromS3,
   deleteThumbnailByKey,
   createVideoS3Bucket,
-  createThumbnailS3Bucket
+  createThumbnailS3Bucket,
+  getThumbnailURLFromS3,
+  doesThumbnailObjectExist
 } from '../aws';
 import {
   VIDEO_MIME_TYPE,
@@ -211,10 +214,12 @@ exports.updateVideo = async archive => {
     const {
       title,
       description,
-      filepath,
+      videoPath,
+      videoType,
+      thumbnailPath,
+      thumbnailType,
       categories,
       videoId,
-      mimetype,
       avaiableForSale
     } = archive;
     if (!videoId) {
@@ -228,12 +233,22 @@ exports.updateVideo = async archive => {
     if (!categories) {
       return badRequest('Video categories must be provided.');
     }
+    if (videoPath && videoType !== VIDEO_MIME_TYPE) {
+      return badRequest('File must be a file with a mp4 extention.');
+    }
+    if (thumbnailPath && thumbnailType !== THUMBNAIL_MIME_TYPE) {
+      return badRequest(
+        'Thumbnail must be a file with a image type extention.'
+      );
+    }
     const video = await getVideoById(videoId);
     if (video) {
       const newKey = removeSpaces(title);
       if (newKey !== video.key) {
-        await copyS3Object(video.key, newKey);
+        await copyVideoObject(video.key, newKey);
+        await copyThumbnailObject(video.key, newKey);
         const s3Location = getVideoURLFromS3(newKey);
+        const s3ThumnailLocation = getThumbnailURLFromS3(newKey);
         const body = {
           title,
           videoId,
@@ -243,35 +258,33 @@ exports.updateVideo = async archive => {
             categories: categories.split(',').map(item => item.trim())
           }),
           url: s3Location,
+          thumbnail: s3ThumnailLocation,
           avaiableForSale
         };
         await updateVideo(body);
         await deleteVideoByKey(video.key);
+        await deleteThumbnailByKey(video.key);
         return [
           200,
           {
             message: 'Video updated to s3 with success',
             video: {
-              title,
-              videoId,
-              description,
-              url: s3Location,
-              avaiableForSale
+              ...body
             }
           }
         ];
       }
       if (filepath) {
-        if (mimetype !== DEFAULT_MIME_TYPE) {
+        if (videoType !== VIDEO_MIME_TYPE) {
           return badRequest('File must be a file with a mp4 extention.');
         }
-        const isBucketAvaiable = await doesS3BucketExist();
-        if (isBucketAvaiable) {
+        const isVideoBucketAvaiable = await doesVideoS3BucketExist();
+        if (isVideoBucketAvaiable) {
           const s3Object = await doesS3ObjectExist(newKey);
           if (s3Object) {
             await deleteVideoByKey(newKey);
           }
-          const { location, duration } = await uploadArchiveToS3Location(
+          const { videoLocation, duration } = await uploadArchiveToS3Location(
             archive
           );
           const body = {
@@ -283,7 +296,7 @@ exports.updateVideo = async archive => {
             ...(categories && {
               categories: categories.split(',').map(item => item.trim())
             }),
-            url: location,
+            url: videoLocation,
             avaiableForSale
           };
           await updateVideo(body);
@@ -292,11 +305,42 @@ exports.updateVideo = async archive => {
             {
               message: 'Video uploaded to s3 with success',
               video: {
-                title,
-                videoId,
-                description,
-                url: location,
-                avaiableForSale
+                ...body
+              }
+            }
+          ];
+        }
+      } else if (thumbnailPath) {
+        if (thumbnailType !== THUMBNAIL_MIME_TYPE) {
+          return badRequest('File must be a file with a jpeg extention.');
+        }
+        const isThumbnailBucketAvaiable = await doesThumbnailS3BucketExist();
+        if (isThumbnailBucketAvaiable) {
+          const s3Object = await doesThumbnailObjectExist(newKey);
+          if (s3Object) {
+            await deleteThumbnailByKey(newKey);
+          }
+          const { thumbNailLocation } = await uploadArchiveToS3Location(
+            archive
+          );
+          const body = {
+            title,
+            videoId,
+            description,
+            key: newKey,
+            ...(categories && {
+              categories: categories.split(',').map(item => item.trim())
+            }),
+            thumbnail: thumbNailLocation,
+            avaiableForSale
+          };
+          await updateVideo(body);
+          return [
+            200,
+            {
+              message: 'Video uploaded to s3 with success',
+              video: {
+                ...body
               }
             }
           ];
@@ -320,11 +364,7 @@ exports.updateVideo = async archive => {
           {
             message: 'Video updated with success.',
             video: {
-              title,
-              videoId,
-              description,
-              url,
-              avaiableForSale
+              ...body
             }
           }
         ];
