@@ -40,33 +40,30 @@ exports.webHookCallback = async payload => {
       const savedBroadcast = await saveBroadcastToDb(payload);
       if (savedBroadcast) {
         return [200];
-      } else {
-        console.log(`Unable to save broadcast data from the bambuser webhook.`);
-        return badRequest(
-          `Unable to save broadcast data from the bambuser webhook.`
-        );
       }
     }
     const { broadcastId } = broadcast;
     const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
     if (updatedBroadcast) {
-      return [200];
-    } else if (payload.type === 'archived') {
-      const [error, livestream] = await uploadLivestream(broadcastId);
-      if (livestream) {
-        await deleteBroadCastById(broadcastId);
-        await deleteBroadcast(broadcastId);
-        return [200];
+      if (payload.type === 'archived') {
+        const [error, livestream] = await uploadLivestream(broadcastId);
+        if (livestream) {
+          await deleteBroadCastById(broadcastId);
+          await deleteBroadcast(broadcastId);
+          return [200];
+        }
+        if (error) {
+          console.log(
+            'Error with migrating livetsream data to s3: ',
+            error.message
+          );
+        }
       }
-      console.log(
-        'Error with migrating livetsream data to s3: ',
-        error.message
-      );
-      return [200];
     }
+    return [200];
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);
-    return badImplementationRequest('Error executing webhook callback.');
+    return [200];
   }
 };
 

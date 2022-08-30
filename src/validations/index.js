@@ -4,6 +4,7 @@
  * https://github.com/validatorjs/validator.js#validators
  */
 import { body, query, param, validationResult } from 'express-validator';
+import { VIDEO_STATUSES } from '../constants';
 
 const videoQueryValidation = [
   query('page')
@@ -27,6 +28,16 @@ const videoQueryValidation = [
   query('userId')
     .isString()
     .withMessage('Must provide a valid userId.')
+    .optional(),
+  body('status')
+    .isString()
+    .custom(status => {
+      if (!VIDEO_STATUSES.includes(status)) {
+        throw new Error('Status submitted is not allowed for this field.');
+      }
+      // Indicates the success of this synchronous custom validator
+      return true;
+    })
     .optional()
 ];
 
@@ -35,7 +46,7 @@ const appIdQueryValidation = [
 ];
 
 const videoIdBodyUpdateValidation = [
-  body('videoId').isNumeric().withMessage('Must provide a existing video id.')
+  body('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
 const videoIdParamValidation = [

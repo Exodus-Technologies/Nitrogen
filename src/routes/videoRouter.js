@@ -12,6 +12,8 @@ const router = Router();
 
 router.post('/video-service/uploadVideo', VideoController.uploadVideo);
 
+router.get('/video-service/getTotal', VideoController.getTotal);
+
 router.get(
   '/video-service/getVideos',
   videoQueryValidation,
@@ -43,5 +45,3 @@ router.delete(
 );
 
 export default router;
-
-router.get('/video-service/getTotal', VideoController.getTotal);

@@ -19,3 +19,9 @@ export const MAX_FILE_SIZE = 200 * 1024 * 1024 * 1024;
 export const AUTHOR = 'Sheen Magazine';
 
 export const DOWNLOAD_LINK_SUCCESS_STATUS = 'ok';
+
+export const VIDEO_PUBLISHED_STATUS = 'PUBLISHED';
+
+export const VIDEO_DRAFT_STATUS = 'DRAFT';
+
+export const VIDEO_STATUSES = [VIDEO_DRAFT_STATUS, VIDEO_PUBLISHED_STATUS];
