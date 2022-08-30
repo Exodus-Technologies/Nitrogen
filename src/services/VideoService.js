@@ -90,7 +90,8 @@ exports.uploadVideo = async archive => {
       thumbnailType,
       key,
       categories,
-      avaiableForSale
+      avaiableForSale,
+      price
     } = archive;
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
@@ -120,6 +121,9 @@ exports.uploadVideo = async archive => {
         'Thumbnail must be a file with a image type extention.'
       );
     }
+    if (!price) {
+      return badRequest('Must have a price associated with the video upload');
+    }
     const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
@@ -144,7 +148,9 @@ exports.uploadVideo = async archive => {
           avaiableForSale,
           duration: fancyTimeFormat(duration),
           url: videoLocation,
-          thumbnail: thumbNailLocation
+          thumbnail: thumbNailLocation,
+          status: 'DRAFT',
+          price
         };
 
         const video = await createVideo(body);
@@ -220,7 +226,9 @@ exports.updateVideo = async archive => {
       thumbnailType,
       categories,
       videoId,
-      avaiableForSale
+      avaiableForSale,
+      status,
+      price
     } = archive;
     if (!videoId) {
       return badRequest('Video id must be provided.');
@@ -259,7 +267,9 @@ exports.updateVideo = async archive => {
           }),
           url: s3Location,
           thumbnail: s3ThumnailLocation,
-          avaiableForSale
+          avaiableForSale,
+          status,
+          price
         };
         await updateVideo(body);
         await deleteVideoByKey(video.key);
@@ -297,7 +307,9 @@ exports.updateVideo = async archive => {
               categories: categories.split(',').map(item => item.trim())
             }),
             url: videoLocation,
-            avaiableForSale
+            avaiableForSale,
+            status,
+            price
           };
           await updateVideo(body);
           return [
@@ -332,7 +344,9 @@ exports.updateVideo = async archive => {
               categories: categories.split(',').map(item => item.trim())
             }),
             thumbnail: thumbNailLocation,
-            avaiableForSale
+            avaiableForSale,
+            status,
+            price
           };
           await updateVideo(body);
           return [
@@ -356,7 +370,9 @@ exports.updateVideo = async archive => {
             categories: categories.split(',').map(item => item.trim())
           }),
           url,
-          avaiableForSale
+          avaiableForSale,
+          status,
+          price
         };
         await updateVideo(body);
         return [

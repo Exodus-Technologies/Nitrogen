@@ -16,7 +16,7 @@ import {
   getContentFromURL,
   getVideoContentFromURL
 } from '../utilities';
-import { DOWNLOAD_LINK_SUCCESS_STATUS } from '../constants';
+import { DOWNLOAD_LINK_SUCCESS_STATUS, VIDEO_DRAFT_STATUS } from '../constants';
 
 const { bambuser } = config.sources;
 const { apiKey, broadcastURL } = bambuser;
@@ -79,13 +79,13 @@ export const uploadLivestream = async broadcastId => {
   try {
     const broadcast = await getBroadCastById(broadcastId);
     const link = await getDownloadLink(broadcastId);
-    const { preview, title } = broadcast;
+    const { preview } = broadcast;
     const { url } = link;
     const { file: videoFile, duration: videoDuration } =
       await getVideoContentFromURL(url);
     const { file: thumbnailFile } = await getContentFromURL(preview);
     const currentDate = moment(new Date()).format('MM-DD-YYYY');
-    const key = title ? `${title}-${currentDate}` : `livestream-${currentDate}`;
+    const key = `livestream-${currentDate}`;
 
     await uploadVideoToS3(videoFile, key);
     await uploadThumbnailToS3(thumbnailFile, key);
@@ -93,14 +93,15 @@ export const uploadLivestream = async broadcastId => {
     const thumbNailLocation = getThumbnailURLFromS3(key);
 
     const body = {
-      title,
+      title: key,
       description: `Livestream that was created on ${currentDate}`,
       key,
       broadcastId,
       categories: ['Livestream'],
       duration: fancyTimeFormat(videoDuration),
       url: videoLocation,
-      thumbnail: thumbNailLocation
+      thumbnail: thumbNailLocation,
+      status: VIDEO_DRAFT_STATUS
     };
 
     const video = await createVideo(body);

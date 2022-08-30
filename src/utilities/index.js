@@ -1,6 +1,7 @@
 'use strict';
 
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import { http, https } from 'follow-redirects';
 
@@ -102,4 +103,8 @@ export const getVideoContentFromURL = url => {
         reject(err);
       });
   });
+};
+
+export const createVideoId = () => {
+  return `video-${uuidv4()}`;
 };
