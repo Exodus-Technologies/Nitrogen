@@ -13,8 +13,7 @@ import AxiosClient from '../utilities/client';
 import {
   fancyTimeFormat,
   getContentFromURL,
-  getVideoContentFromURL,
-  delay
+  getVideoContentFromURL
 } from '../utilities';
 import { DOWNLOAD_LINK_SUCCESS_STATUS, VIDEO_DRAFT_STATUS } from '../constants';
 
