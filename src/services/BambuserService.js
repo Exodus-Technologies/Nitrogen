@@ -10,13 +10,14 @@ import {
 } from '../mongodb';
 
 import { deleteBroadCastById, uploadLivestream } from '../bambuser';
+import { BAMBUSER_BROADCAST_STATUS } from '../constants';
 
-const { platfromKeys } = config.sources.bambuser;
+const { platformKeys } = config.sources.bambuser;
 
 exports.getApplicationId = async query => {
   try {
     const { platform } = query;
-    const applicationId = platfromKeys[platform];
+    const applicationId = platformKeys[platform];
     if (applicationId) {
       return [
         200,
@@ -45,7 +46,7 @@ exports.webHookCallback = async payload => {
     const { broadcastId } = broadcast;
     const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
     if (updatedBroadcast) {
-      if (payload.type === 'archived') {
+      if (payload.type === BAMBUSER_BROADCAST_STATUS) {
         const [error, livestream] = await uploadLivestream(broadcastId);
         if (livestream) {
           await deleteBroadCastById(broadcastId);
@@ -85,6 +86,6 @@ exports.uploadLivestream = async broadcastId => {
     }
   } catch (err) {
     console.log(`Error with moving livestream data to s3: `, err);
-    return badImplementationRequest('Error with moving livestream data to s3.');
+    return badImplementationRequest('Error with moving livestream data to s3');
   }
 };

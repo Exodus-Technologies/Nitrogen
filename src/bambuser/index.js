@@ -8,7 +8,6 @@ import {
   getVideoURLFromS3,
   getThumbnailURLFromS3
 } from '../aws';
-import { badImplementationRequest } from '../response-codes';
 import { createVideo } from '../mongodb';
 import AxiosClient from '../utilities/client';
 import {
@@ -65,7 +64,16 @@ export const getDownloadLink = broadcastId => {
 
       const { data: link } = response;
 
+      console.log('status of mp4 conversion: ', link.progress);
+
+      if (link.status !== DOWNLOAD_LINK_SUCCESS_STATUS) {
+        setTimeout(() => {
+          getDownloadLink(broadcastId);
+        }, 10000);
+      }
+
       if (link.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
+        console.log('Sending link to be processed to s3');
         resolve(link);
       }
     } catch (err) {
@@ -79,7 +87,7 @@ export const uploadLivestream = async broadcastId => {
   try {
     const broadcast = await getBroadCastById(broadcastId);
     const link = await getDownloadLink(broadcastId);
-    const { preview } = broadcast;
+    const { preview, title } = broadcast;
     const { url } = link;
     const { file: videoFile, duration: videoDuration } =
       await getVideoContentFromURL(url);
@@ -87,13 +95,17 @@ export const uploadLivestream = async broadcastId => {
     const currentDate = moment(new Date()).format('MM-DD-YYYY');
     const key = `livestream-${currentDate}`;
 
+    console.log('uploading video to s3....');
     await uploadVideoToS3(videoFile, key);
+
+    console.log('uploading thumbnail to s3....');
     await uploadThumbnailToS3(thumbnailFile, key);
+
     const videoLocation = getVideoURLFromS3(key);
     const thumbNailLocation = getThumbnailURLFromS3(key);
 
     const body = {
-      title: key,
+      title: title || key,
       description: `Livestream that was created on ${currentDate}`,
       key,
       broadcastId,
@@ -112,6 +124,6 @@ export const uploadLivestream = async broadcastId => {
     }
   } catch (err) {
     console.log(`Error with moving livestream data to s3: `, err);
-    return badImplementationRequest('Error with moving livestream data to s3.');
+    return [Error(`Unable to save video metadata: ${err.response.statusText}`)];
   }
 };

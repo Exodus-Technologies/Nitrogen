@@ -95,6 +95,7 @@ export const getVideoContentFromURL = url => {
           const content = { file: Buffer.concat(chunks) };
           const duration = await getVideoDurationInSeconds(url);
           content['duration'] = duration;
+          console.log('Finished processing file from url: ', url, content);
           resolve(content);
         });
       })

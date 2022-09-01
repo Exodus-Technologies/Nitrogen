@@ -23,7 +23,7 @@ const startServer = async () => {
  * Connect to mongodb database
  */
 const connectDB = async () => {
-  const { options } = config.sources.database;
+  const { options } = config.sources.mongodb;
   const { source } = models;
   const uri = generateDBUri();
   try {
@@ -60,5 +60,5 @@ process
     source.disconnect().catch(err => {
       process.exit(err ? 1 : 0);
     });
-    console.log('Disconnecting from database and shutting down application.');
+    console.log('Disconnecting from mongodb and shutting down application.');
   });
