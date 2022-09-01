@@ -15,7 +15,7 @@ const config = {
       s3ThumbnailBucketName: process.env.S3_THUMBNAIL_BUCKET_NAME,
       s3VideoBucketName: process.env.S3_VIDEO_BUCKET_NAME
     },
-    database: {
+    mongodb: {
       clusterName: process.env.CLUSTER_NAME,
       dbName: process.env.DB_NAME,
       dbUser: process.env.DB_USER,
@@ -29,12 +29,12 @@ const config = {
       apiKey: process.env.BAMBUSER_API_KEY,
       daId: process.env.BAMBUSER_DAID,
       daSecret: process.env.BAMBUSER_DASECRET,
-      platfromKeys: {
+      broadcastURL: process.env.BAMBUSER_BROADCAST_URL,
+      platformKeys: {
         ios: process.env.BAMBUSER_APP_KEY_IOS,
         android: process.env.BAMBUSER_APP_KEY_ANDROID,
         web: process.env.BAMBUSER_APP_KEY_WEB
-      },
-      broadcastURL: process.env.BAMBUSER_BROADCAST_URL
+      }
     }
   }
 };
