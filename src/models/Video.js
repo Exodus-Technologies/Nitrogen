@@ -21,7 +21,7 @@ const videoSchema = new Schema(
     author: { type: String, default: AUTHOR },
     key: { type: String, required: true },
     availableForSale: { type: Boolean, default: true },
-    price: { type: Number, default: 0 },
+    price: { type: String },
     thumbnail: { type: String },
     duration: { type: String },
     status: { type: String, default: VIDEO_PUBLISHED_STATUS },
