@@ -15,7 +15,12 @@ import {
   getContentFromURL,
   getVideoContentFromURL
 } from '../utilities';
-import { DOWNLOAD_LINK_SUCCESS_STATUS, VIDEO_DRAFT_STATUS } from '../constants';
+import {
+  DOWNLOAD_LINK_SUCCESS_STATUS,
+  VIDEO_DRAFT_STATUS,
+  BAMBUSER_API_VERSION_ONE,
+  BAMBUSER_API_VERSION_TWO
+} from '../constants';
 
 const { bambuser } = config.sources;
 const { apiKey, broadcastURL } = bambuser;
@@ -24,7 +29,8 @@ const axiosClient = new AxiosClient(broadcastURL, apiKey);
 
 export const getBroadCastById = async broadcastId => {
   try {
-    const v1Instance = axiosClient.getV1();
+    const v1Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_ONE);
+
     const response = await v1Instance({
       url: `/${broadcastId}`,
       method: 'GET'
@@ -40,7 +46,8 @@ export const getBroadCastById = async broadcastId => {
 
 export const deleteBroadCastById = async broadcastId => {
   try {
-    const v1Instance = axiosClient.getV1();
+    const v1Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_ONE);
+
     await v1Instance({
       url: `/${broadcastId}`,
       method: 'DELETE'
@@ -55,26 +62,18 @@ export const deleteBroadCastById = async broadcastId => {
 export const getDownloadLink = broadcastId => {
   return new Promise(async (resolve, reject) => {
     try {
-      const v2Instance = axiosClient.getV2();
+      const v2Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_TWO);
+
       const response = await v2Instance({
         url: `/${broadcastId}/downloads`,
-        method: 'POST',
-        data: JSON.stringify({ format: 'mp4-h264' })
+        method: 'GET'
       });
 
       const { data: link } = response;
+      const [flv, mp4] = link;
 
-      console.log('status of mp4 conversion: ', link.progress);
-
-      if (link.status !== DOWNLOAD_LINK_SUCCESS_STATUS) {
-        setTimeout(() => {
-          getDownloadLink(broadcastId);
-        }, 10000);
-      }
-
-      if (link.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
-        console.log('Sending link to be processed to s3');
-        resolve(link);
+      if (flv && flv.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
+        resolve(flv);
       }
     } catch (err) {
       console.log('Error getting broadcast download link from bambuser: ', err);
@@ -89,6 +88,7 @@ export const uploadLivestream = async broadcastId => {
     const link = await getDownloadLink(broadcastId);
     const { preview, title } = broadcast;
     const { url } = link;
+
     const { file: videoFile, duration: videoDuration } =
       await getVideoContentFromURL(url);
     const { file: thumbnailFile } = await getContentFromURL(preview);

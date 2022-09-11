@@ -1,18 +1,21 @@
 'use strict';
 
 import mongoose from 'mongoose';
+import mongooseSequence from 'mongoose-sequence';
 import config from '../config';
 import { AUTHOR, VIDEO_PUBLISHED_STATUS } from '../constants';
-import { createVideoId } from '../utilities';
+import { createSubId } from '../utilities';
 
 const { Schema } = mongoose;
+const autoIncrement = mongooseSequence(mongoose);
+
 const { NODE_ENV } = config;
 
 //VIDEO SCHEMA
 //  ============================================
 const videoSchema = new Schema(
   {
-    videoId: { type: String, default: createVideoId() },
+    subId: { type: String, default: createSubId() },
     title: { type: String },
     broadcastId: { type: String },
     url: { type: String, required: true },
@@ -34,6 +37,11 @@ const videoSchema = new Schema(
  * Set the autoCreate option on models if not on production
  */
 videoSchema.set('autoCreate', NODE_ENV !== 'production');
+
+/**
+ * Increments videoId everytime an instances is created
+ */
+videoSchema.plugin(autoIncrement, { inc_field: 'videoId' });
 
 /**
  * Create Video model out of videoSchema
