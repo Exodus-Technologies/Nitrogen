@@ -1,4 +1,4 @@
-const axios = require('axios').default;
+import axios from 'axios';
 
 class AxiosClient {
   constructor(baseURL, apiKey) {
@@ -13,22 +13,12 @@ class AxiosClient {
     };
   }
 
-  getV1() {
+  getInstance(version) {
     return axios.create({
       baseURL: this.baseURL,
       headers: {
         ...this.getHeaders(),
-        Accept: `application/vnd.bambuser.v1+json`
-      }
-    });
-  }
-
-  getV2() {
-    return axios.create({
-      baseURL: this.baseURL,
-      headers: {
-        ...this.getHeaders(),
-        Accept: `application/vnd.bambuser.v2+json`
+        Accept: `application/vnd.bambuser.${version}+json`
       }
     });
   }

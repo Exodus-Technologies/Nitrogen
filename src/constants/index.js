@@ -27,3 +27,7 @@ export const VIDEO_DRAFT_STATUS = 'DRAFT';
 export const VIDEO_STATUSES = [VIDEO_DRAFT_STATUS, VIDEO_PUBLISHED_STATUS];
 
 export const BAMBUSER_BROADCAST_STATUS = 'archived';
+
+export const BAMBUSER_API_VERSION_ONE = 'v1';
+
+export const BAMBUSER_API_VERSION_TWO = 'v2';

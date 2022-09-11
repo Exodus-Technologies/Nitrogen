@@ -358,7 +358,7 @@ export const uploadArchiveToS3Location = async archive => {
       await uploadVideoToS3(videoFile, key);
       await uploadThumbnailToS3(thumbnailFile, key);
       const videoLocation = getVideoURLFromS3(key);
-      const thumbNailLocation = getThumbnailExtention(key);
+      const thumbNailLocation = getThumbnailURLFromS3(key);
       resolve({ thumbNailLocation, videoLocation, duration: videoDuration });
     } catch (err) {
       console.log(`Error uploading archives to s3 buckets`, err);
