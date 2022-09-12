@@ -90,7 +90,6 @@ exports.uploadVideo = async archive => {
       thumbnailType,
       key,
       categories,
-      avaiableForSale,
       price
     } = archive;
     if (!title) {
@@ -145,7 +144,6 @@ exports.uploadVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
-          avaiableForSale,
           duration: fancyTimeFormat(duration),
           url: videoLocation,
           thumbnail: thumbNailLocation,
@@ -226,8 +224,8 @@ exports.updateVideo = async archive => {
       thumbnailType,
       categories,
       videoId,
-      avaiableForSale,
       status,
+      isPaid,
       price
     } = archive;
     if (!videoId) {
@@ -237,6 +235,9 @@ exports.updateVideo = async archive => {
       return badRequest(
         'Description must be provided and less than 255 characters long.'
       );
+    }
+    if (isPaid && typeof isPaid !== 'boolean') {
+      return badRequest('Paid must be a boolean.');
     }
     if (!categories) {
       return badRequest('Video categories must be provided.');
@@ -267,8 +268,8 @@ exports.updateVideo = async archive => {
           }),
           url: s3Location,
           thumbnail: s3ThumnailLocation,
-          avaiableForSale,
           status,
+          isPaid,
           price
         };
         await updateVideo(body);
@@ -307,9 +308,9 @@ exports.updateVideo = async archive => {
               categories: categories.split(',').map(item => item.trim())
             }),
             url: videoLocation,
-            avaiableForSale,
             status,
-            price
+            price,
+            isPaid
           };
           await updateVideo(body);
           return [
@@ -344,9 +345,9 @@ exports.updateVideo = async archive => {
               categories: categories.split(',').map(item => item.trim())
             }),
             thumbnail: thumbNailLocation,
-            avaiableForSale,
             status,
-            price
+            price,
+            isPaid
           };
           await updateVideo(body);
           return [
@@ -370,9 +371,9 @@ exports.updateVideo = async archive => {
             categories: categories.split(',').map(item => item.trim())
           }),
           url,
-          avaiableForSale,
           status,
-          price
+          price,
+          isPaid
         };
         await updateVideo(body);
         return [

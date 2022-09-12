@@ -23,7 +23,7 @@ const videoSchema = new Schema(
     totalViews: { type: Number, default: 0 },
     author: { type: String, default: AUTHOR },
     key: { type: String, required: true },
-    availableForSale: { type: Boolean, default: true },
+    isPaid: { type: Boolean, default: true },
     price: { type: String },
     thumbnail: { type: String },
     duration: { type: String },
