@@ -19,7 +19,8 @@ import {
 import {
   VIDEO_MIME_TYPE,
   THUMBNAIL_MIME_TYPE,
-  MAX_FILE_SIZE
+  MAX_FILE_SIZE,
+  VIDEO_PUBLISHED_STATUS
 } from '../constants';
 import {
   createVideo,
@@ -42,6 +43,10 @@ function removeSpaces(str) {
   return str.replace(/\s+/g, '');
 }
 
+function convertCheckBoxValue(val) {
+  return val === 'on';
+}
+
 exports.getPayloadFromRequest = async req => {
   const form = formidable({
     multiples: true,
@@ -54,7 +59,11 @@ exports.getPayloadFromRequest = async req => {
         reject(err);
       }
       if (isEmpty(fields)) reject('Form is empty.');
-      const file = { ...fields, key: removeSpaces(fields.title) };
+      const file = {
+        ...fields,
+        isPaid: convertCheckBoxValue(fields['isPaid']),
+        key: removeSpaces(fields.title)
+      };
       if (!isEmpty(files)) {
         const { filepath: videoPath, mimetype: videoType } = files['file'];
         const { filepath: thumbnailPath, mimetype: thumbnailType } =
@@ -90,8 +99,10 @@ exports.uploadVideo = async archive => {
       thumbnailType,
       key,
       categories,
-      price
+      price,
+      isPaid
     } = archive;
+    console.log(archive);
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
     }
@@ -147,8 +158,9 @@ exports.uploadVideo = async archive => {
           duration: fancyTimeFormat(duration),
           url: videoLocation,
           thumbnail: thumbNailLocation,
-          status: 'DRAFT',
-          price
+          status: VIDEO_PUBLISHED_STATUS,
+          price,
+          isPaid
         };
 
         const video = await createVideo(body);
