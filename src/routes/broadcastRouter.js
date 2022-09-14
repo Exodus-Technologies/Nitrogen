@@ -3,7 +3,10 @@
 import express from 'express';
 import { BroadcastController } from '../controllers';
 import { validationHandler } from '../middlewares';
-import { broadCastIdParamValidation } from '../validations';
+import {
+  broadCastIdParamValidation,
+  broadcastQueryValidation
+} from '../validations';
 
 const { Router } = express;
 const router = Router();
@@ -11,6 +14,13 @@ const router = Router();
 router.get(
   '/video-service/getActiveBroadcast',
   BroadcastController.getActiveBroadcast
+);
+
+router.get(
+  '/video-service/getBroadcasts',
+  broadcastQueryValidation,
+  validationHandler,
+  BroadcastController.getBroadcasts
 );
 
 router.delete(

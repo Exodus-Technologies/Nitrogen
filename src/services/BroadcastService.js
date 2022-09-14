@@ -1,6 +1,6 @@
 'use strict';
 
-import { getActiveBroadcast, deleteBroadcast } from '../mongodb';
+import { getActiveBroadcast, deleteBroadcast, getBroadcasts } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
 exports.getActiveBroadcast = async () => {
@@ -14,6 +14,23 @@ exports.getActiveBroadcast = async () => {
   } catch (err) {
     console.log('Error getting active broadcast: ', err);
     return badImplementationRequest('Error getting active broadcast.');
+  }
+};
+
+exports.getBroadcasts = async query => {
+  try {
+    const broadcasts = await getBroadcasts(query);
+    if (broadcasts) {
+      return [
+        200,
+        { message: 'Broadcasts fetched from db with success', broadcasts }
+      ];
+    } else {
+      return badRequest(`No broadcasts found with selected query params.`);
+    }
+  } catch (err) {
+    console.log('Error getting all broadcasts: ', err);
+    return badImplementationRequest('Error getting broadcasts.');
   }
 };
 

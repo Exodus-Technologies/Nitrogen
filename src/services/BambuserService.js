@@ -6,11 +6,11 @@ import {
   saveBroadcastToDb,
   updateBroadcastInDB,
   getActiveBroadcast,
-  deleteBroadcast
+  deleteBroadcast,
+  getBroadcasts
 } from '../mongodb';
 
 import { deleteBroadCastById, uploadLivestream } from '../bambuser';
-import { BAMBUSER_BROADCAST_STATUS } from '../constants';
 
 const { platformKeys } = config.sources.bambuser;
 
@@ -46,20 +46,7 @@ exports.webHookCallback = async payload => {
     const { broadcastId } = broadcast;
     const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
     if (updatedBroadcast) {
-      if (payload.type === BAMBUSER_BROADCAST_STATUS) {
-        const [error, livestream] = await uploadLivestream(broadcastId);
-        if (livestream) {
-          await deleteBroadCastById(broadcastId);
-          await deleteBroadcast(broadcastId);
-          return [200];
-        }
-        if (error) {
-          console.log(
-            'Error with migrating livetsream data to s3: ',
-            error.message
-          );
-        }
-      }
+      return [200];
     }
     return [200];
   } catch (err) {

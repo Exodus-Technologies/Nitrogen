@@ -98,6 +98,19 @@ const categoryUpdateValidation = [
     .withMessage('Must provide a category name.')
 ];
 
+const broadcastQueryValidation = [
+  query('page')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a page for broadcasts.'),
+  query('limit')
+    .isString()
+    .not()
+    .isEmpty()
+    .withMessage('Must provide a limit for broadcasts.')
+];
+
 export {
   validationResult,
   videoQueryValidation,
@@ -109,5 +122,6 @@ export {
   categoryUpdateValidation,
   categoryIdParamValidation,
   broadCastIdBodyValidation,
-  broadCastIdParamValidation
+  broadCastIdParamValidation,
+  broadcastQueryValidation
 };
