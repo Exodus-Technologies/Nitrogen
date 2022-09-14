@@ -102,7 +102,6 @@ exports.uploadVideo = async archive => {
       price,
       isPaid
     } = archive;
-    console.log(archive);
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
     }
