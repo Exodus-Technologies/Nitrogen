@@ -80,6 +80,51 @@ export const getVideos = async query => {
   }
 };
 
+export const getBroadcasts = async query => {
+  try {
+    const { Broadcast } = models;
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
+    const skipIndex = (page - 1) * limit;
+
+    const filter = [];
+    for (const [key, value] of Object.entries(query)) {
+      if (key != 'page' && key != 'limit' && key != 'sort') {
+        filter.push({ [key]: { $regex: value, $options: 'i' } });
+      }
+    }
+
+    const objectFilter = { isActive: false };
+    if (filter.length > 0) {
+      objectFilter['$and'] = filter;
+    }
+
+    let sortString = '-id';
+    if (query.sort) {
+      sortString = query.sort;
+    }
+
+    const broadcasts = await Broadcast.find(objectFilter, queryOps)
+      .limit(limit)
+      .skip(skipIndex)
+      .sort(sortString)
+      .lean()
+      .exec();
+
+    const total = await Broadcast.find(objectFilter, queryOps).count();
+
+    return broadcasts.map(broadcast => {
+      return {
+        ...broadcast,
+        total,
+        pages: Math.ceil(total / limit)
+      };
+    });
+  } catch (err) {
+    console.log('Error getting broadcast data from db: ', err);
+  }
+};
+
 export const getTotal = async () => {
   try {
     const { Video } = models;
