@@ -1,13 +1,9 @@
 'use strict';
 
 import fs from 'fs';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { getVideoDurationInSeconds } from 'get-video-duration';
-import hbjs from 'handbrake-js';
 import { http, https } from 'follow-redirects';
-
-const uploadDir = path.resolve(process.cwd() + '/src/uploads');
 
 export const fancyTimeFormat = duration => {
   // Hours, minutes and seconds
@@ -96,61 +92,17 @@ export const getVideoContentFromURL = url => {
         });
 
         resp.on('end', async () => {
-          const file = Buffer.concat(chunks);
-          await writeLocalFile(file);
-          const mp4File = await convertFLVtoMp4();
-          const content = { file: mp4File };
+          const content = { file: Buffer.concat(chunks) };
           const duration = await getVideoDurationInSeconds(url);
           content['duration'] = duration;
           console.log('Finished processing file from url: ', url, content);
-          // resolve(content);
+          resolve(content);
         });
       })
       .on('error', err => {
         console.log(`Error getting video data from url: ${url} `, err);
         reject(err);
       });
-  });
-};
-
-export const writeLocalFile = content => {
-  return new Promise((resolve, reject) => {
-    try {
-      fs.writeFile(`${uploadDir}/upload.flv`, content, err => {
-        if (!err) {
-          console.log('File has been created succesfully');
-          resolve();
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      reject();
-    }
-  });
-};
-
-export const convertFLVtoMp4 = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      const options = {
-        input: `${uploadDir}/upload.flv`,
-        output: `${uploadDir}/upload.mp4`,
-        preset: 'Normal',
-        rotate: 1
-      };
-      hbjs
-        .spawn(options)
-        .on('error', console.error)
-        .on('progress', ({ percentComplete, eta }) => {
-          console.log('Percent complete: %s, ETA: %s', percentComplete, eta);
-        })
-        .on('output', output => {
-          console.log(output);
-        });
-    } catch (err) {
-      console.error(err);
-      reject();
-    }
   });
 };
 
