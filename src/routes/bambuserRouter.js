@@ -29,4 +29,11 @@ router.post(
   BambuserController.uploadLivestream
 );
 
+router.post(
+  '/video-service/getMP4DownloadStatus',
+  broadCastIdBodyValidation,
+  validationHandler,
+  BambuserController.getMP4DownloadStatus
+);
+
 export default router;
