@@ -70,13 +70,37 @@ export const getDownloadLink = broadcastId => {
       });
 
       const { data: link } = response;
-      const [flv, mp4] = link;
+      const [flv] = link;
 
       if (flv && flv.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
         resolve(flv);
       }
     } catch (err) {
       console.log('Error getting broadcast download link from bambuser: ', err);
+      reject(err);
+    }
+  });
+};
+
+export const getMP4DownloadStatus = broadcastId => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const v2Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_TWO);
+
+      const response = await v2Instance({
+        url: `/${broadcastId}/downloads`,
+        method: 'POST',
+        data: JSON.stringify({ format: 'mp4-h264' })
+      });
+
+      const { data: link } = response;
+
+      resolve(link);
+    } catch (err) {
+      console.log(
+        'Error getting broadcast download link status from bambuser: ',
+        err
+      );
       reject(err);
     }
   });

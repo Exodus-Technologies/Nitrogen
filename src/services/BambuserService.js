@@ -6,9 +6,9 @@ import {
   saveBroadcastToDb,
   updateBroadcastInDB,
   getActiveBroadcast,
-  deleteBroadcast,
-  getBroadcasts
+  deleteBroadcast
 } from '../mongodb';
+import { getMP4DownloadStatus } from '../bambuser';
 
 import { deleteBroadCastById, uploadLivestream } from '../bambuser';
 
@@ -52,6 +52,25 @@ exports.webHookCallback = async payload => {
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);
     return [200];
+  }
+};
+
+exports.getMP4DownloadStatus = async broadcastId => {
+  try {
+    const status = await getMP4DownloadStatus(broadcastId);
+    if (status) {
+      return [
+        200,
+        {
+          message: 'Livestream data was fetched successfully.',
+          status
+        }
+      ];
+    }
+    return badRequest('Unable to get status of mp4 format download');
+  } catch (err) {
+    console.log(`Error with fetching livestream data: `, err);
+    return badImplementationRequest('Error with fetching livestream data');
   }
 };
 
