@@ -65,15 +65,24 @@ exports.getPayloadFromRequest = async req => {
         key: removeSpaces(fields.title)
       };
       if (!isEmpty(files)) {
-        const { filepath: videoPath, mimetype: videoType } = files['file'];
-        const { filepath: thumbnailPath, mimetype: thumbnailType } =
-          files['thumbnail'];
+        const {
+          filepath: videoPath,
+          mimetype: videoType,
+          size: videoSize
+        } = files['file'];
+        const {
+          filepath: thumbnailPath,
+          mimetype: thumbnailType,
+          size: thumbnailSize
+        } = files['thumbnail'];
         resolve({
           ...file,
           videoPath,
           videoType,
           thumbnailPath,
-          thumbnailType
+          thumbnailType,
+          videoSize,
+          thumbnailSize
         });
       } else {
         resolve(file);
@@ -95,11 +104,12 @@ exports.uploadVideo = async archive => {
       description,
       videoPath,
       videoType,
+      videoSize,
       thumbnailPath,
       thumbnailType,
+      thumbnailSize,
       key,
       categories,
-      price,
       isPaid
     } = archive;
     if (!title) {
@@ -116,10 +126,13 @@ exports.uploadVideo = async archive => {
       );
     }
     if (!videoPath) {
-      return badRequest('File must be provided to upload.');
+      return badRequest('Video must be provided to upload.');
     }
     if (videoPath && videoType !== VIDEO_MIME_TYPE) {
-      return badRequest('File must be a file with a mp4 extention.');
+      return badRequest('Video must be a file with a mp4 extention.');
+    }
+    if (videoPath && videoSize < 0) {
+      return badRequest('Video must be a file with actual content inside.');
     }
 
     if (!thumbnailPath) {
@@ -130,9 +143,10 @@ exports.uploadVideo = async archive => {
         'Thumbnail must be a file with a image type extention.'
       );
     }
-    if (!price) {
-      return badRequest('Must have a price associated with the video upload');
+    if (thumbnailPath && thumbnailSize <= 0) {
+      return badRequest('Thumbnail must be a file with content.');
     }
+
     const video = await getVideoByTitle(title);
     if (video) {
       return badRequest(
@@ -158,7 +172,6 @@ exports.uploadVideo = async archive => {
           url: videoLocation,
           thumbnail: thumbNailLocation,
           status: VIDEO_PUBLISHED_STATUS,
-          price,
           isPaid
         };
 
@@ -231,13 +244,14 @@ exports.updateVideo = async archive => {
       description,
       videoPath,
       videoType,
+      videoSize,
       thumbnailPath,
       thumbnailType,
+      thumbnailSize,
       categories,
       videoId,
       status,
-      isPaid,
-      price
+      isPaid
     } = archive;
     if (!videoId) {
       return badRequest('Video id must be provided.');
@@ -252,14 +266,6 @@ exports.updateVideo = async archive => {
     }
     if (!categories) {
       return badRequest('Video categories must be provided.');
-    }
-    if (videoPath && videoType !== VIDEO_MIME_TYPE) {
-      return badRequest('File must be a file with a mp4 extention.');
-    }
-    if (thumbnailPath && thumbnailType !== THUMBNAIL_MIME_TYPE) {
-      return badRequest(
-        'Thumbnail must be a file with a image type extention.'
-      );
     }
     const video = await getVideoById(videoId);
     if (video) {
@@ -280,8 +286,7 @@ exports.updateVideo = async archive => {
           url: s3Location,
           thumbnail: s3ThumnailLocation,
           status,
-          isPaid,
-          price
+          isPaid
         };
         await updateVideo(body);
         await deleteVideoByKey(video.key);
@@ -296,7 +301,7 @@ exports.updateVideo = async archive => {
           }
         ];
       }
-      if (filepath) {
+      if (videoPath && videoSize > 0) {
         if (videoType !== VIDEO_MIME_TYPE) {
           return badRequest('File must be a file with a mp4 extention.');
         }
@@ -320,7 +325,6 @@ exports.updateVideo = async archive => {
             }),
             url: videoLocation,
             status,
-            price,
             isPaid
           };
           await updateVideo(body);
@@ -334,7 +338,7 @@ exports.updateVideo = async archive => {
             }
           ];
         }
-      } else if (thumbnailPath) {
+      } else if (thumbnailPath && thumbnailSize > 0) {
         if (thumbnailType !== THUMBNAIL_MIME_TYPE) {
           return badRequest('File must be a file with a jpeg extention.');
         }
@@ -357,7 +361,6 @@ exports.updateVideo = async archive => {
             }),
             thumbnail: thumbNailLocation,
             status,
-            price,
             isPaid
           };
           await updateVideo(body);
@@ -383,7 +386,6 @@ exports.updateVideo = async archive => {
           }),
           url,
           status,
-          price,
           isPaid
         };
         await updateVideo(body);
