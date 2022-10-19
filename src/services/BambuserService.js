@@ -8,9 +8,8 @@ import {
   getActiveBroadcast,
   deleteBroadcast
 } from '../mongodb';
-import { getMP4DownloadStatus } from '../bambuser';
-
 import { deleteBroadCastById, uploadLivestream } from '../bambuser';
+import { BAMBUSER_BROADCAST_STATUS } from '../constants';
 
 const { platformKeys } = config.sources.bambuser;
 
@@ -46,52 +45,26 @@ exports.webHookCallback = async payload => {
     const { broadcastId } = broadcast;
     const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
     if (updatedBroadcast) {
-      return [200];
+      if (payload.type === BAMBUSER_BROADCAST_STATUS) {
+        const [error, livestream] = await uploadLivestream(broadcastId);
+        if (livestream) {
+          await deleteBroadCastById(broadcastId);
+          await deleteBroadcast(broadcastId);
+          return [
+            200,
+            {
+              message: 'Livestream data was uploaded to s3 with success',
+              livestream
+            }
+          ];
+        } else {
+          return badRequest(error.message);
+        }
+      }
     }
     return [200];
   } catch (err) {
     console.log(`Error executing webhook callback: `, err);
     return [200];
-  }
-};
-
-exports.getMP4DownloadStatus = async broadcastId => {
-  try {
-    const status = await getMP4DownloadStatus(broadcastId);
-    if (status) {
-      return [
-        200,
-        {
-          message: 'Livestream data was fetched successfully.',
-          status
-        }
-      ];
-    }
-    return badRequest('Unable to get status of mp4 format download');
-  } catch (err) {
-    console.log(`Error with fetching livestream data: `, err);
-    return badImplementationRequest('Error with fetching livestream data');
-  }
-};
-
-exports.uploadLivestream = async broadcastId => {
-  try {
-    const [error, livestream] = await uploadLivestream(broadcastId);
-    if (livestream) {
-      await deleteBroadCastById(broadcastId);
-      await deleteBroadcast(broadcastId);
-      return [
-        200,
-        {
-          message: 'Livestream data was uploaded to s3 with success',
-          livestream
-        }
-      ];
-    } else {
-      return badRequest(error.message);
-    }
-  } catch (err) {
-    console.log(`Error with moving livestream data to s3: `, err);
-    return badImplementationRequest('Error with moving livestream data to s3');
   }
 };

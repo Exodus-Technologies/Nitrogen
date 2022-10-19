@@ -61,7 +61,7 @@ exports.getPayloadFromRequest = async req => {
       if (isEmpty(fields)) reject('Form is empty.');
       const file = {
         ...fields,
-        isPaid: convertCheckBoxValue(fields['isPaid']),
+        isAvailableForSale: convertCheckBoxValue(fields['isAvailableForSale']),
         key: removeSpaces(fields.title)
       };
       if (!isEmpty(files)) {
@@ -110,7 +110,7 @@ exports.uploadVideo = async archive => {
       thumbnailSize,
       key,
       categories,
-      isPaid
+      isAvailableForSale
     } = archive;
     if (!title) {
       return badRequest('Must have file title associated with file upload.');
@@ -172,7 +172,7 @@ exports.uploadVideo = async archive => {
           url: videoLocation,
           thumbnail: thumbNailLocation,
           status: VIDEO_PUBLISHED_STATUS,
-          isPaid
+          isAvailableForSale
         };
 
         const video = await createVideo(body);
@@ -251,7 +251,7 @@ exports.updateVideo = async archive => {
       categories,
       videoId,
       status,
-      isPaid
+      isAvailableForSale
     } = archive;
     if (!videoId) {
       return badRequest('Video id must be provided.');
@@ -261,8 +261,8 @@ exports.updateVideo = async archive => {
         'Description must be provided and less than 255 characters long.'
       );
     }
-    if (isPaid && typeof isPaid !== 'boolean') {
-      return badRequest('Paid must be a boolean.');
+    if (isAvailableForSale && typeof isAvailableForSale !== 'boolean') {
+      return badRequest('isAvailableForSale flag must be a boolean.');
     }
     if (!categories) {
       return badRequest('Video categories must be provided.');
@@ -286,7 +286,7 @@ exports.updateVideo = async archive => {
           url: s3Location,
           thumbnail: s3ThumnailLocation,
           status,
-          isPaid
+          isAvailableForSale
         };
         await updateVideo(body);
         await deleteVideoByKey(video.key);
@@ -325,7 +325,7 @@ exports.updateVideo = async archive => {
             }),
             url: videoLocation,
             status,
-            isPaid
+            isAvailableForSale
           };
           await updateVideo(body);
           return [
@@ -361,7 +361,7 @@ exports.updateVideo = async archive => {
             }),
             thumbnail: thumbNailLocation,
             status,
-            isPaid
+            isAvailableForSale
           };
           await updateVideo(body);
           return [
@@ -386,7 +386,7 @@ exports.updateVideo = async archive => {
           }),
           url,
           status,
-          isPaid
+          isAvailableForSale
         };
         await updateVideo(body);
         return [

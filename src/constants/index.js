@@ -31,3 +31,5 @@ export const BAMBUSER_BROADCAST_STATUS = 'archived';
 export const BAMBUSER_API_VERSION_ONE = 'v1';
 
 export const BAMBUSER_API_VERSION_TWO = 'v2';
+
+export const BAMBUSER_API_TIMEOUT = 600000; //10 mins
