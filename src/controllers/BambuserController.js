@@ -32,29 +32,3 @@ exports.webHookCallback = async (req, res, next) => {
     next(err);
   }
 };
-
-exports.getMP4DownloadStatus = async (req, res, next) => {
-  try {
-    const { broadcastId } = req.body;
-    const [statusCode, response] = await BambuserService.getMP4DownloadStatus(
-      broadcastId
-    );
-    res.status(statusCode).send(response);
-  } catch (err) {
-    console.log(`Error with getting livestream data: `, err);
-    next(err);
-  }
-};
-
-exports.uploadLivestream = async (req, res, next) => {
-  try {
-    const { broadcastId } = req.body;
-    const [statusCode, response] = await BambuserService.uploadLivestream(
-      broadcastId
-    );
-    res.status(statusCode).send(response);
-  } catch (err) {
-    console.log(`Error with moving livestream data to s3: `, err);
-    next(err);
-  }
-};

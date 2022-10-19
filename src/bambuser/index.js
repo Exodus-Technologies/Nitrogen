@@ -19,7 +19,8 @@ import {
   DOWNLOAD_LINK_SUCCESS_STATUS,
   VIDEO_DRAFT_STATUS,
   BAMBUSER_API_VERSION_ONE,
-  BAMBUSER_API_VERSION_TWO
+  BAMBUSER_API_VERSION_TWO,
+  BAMBUSER_API_TIMEOUT
 } from '../constants';
 
 const { bambuser } = config.sources;
@@ -62,27 +63,27 @@ export const deleteBroadCastById = async broadcastId => {
 export const getDownloadLink = broadcastId => {
   return new Promise(async (resolve, reject) => {
     try {
-      const v2Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_TWO);
+      const intervalID = setInterval(async () => {
+        const link = await getMP4DownloadStatus(broadcastId);
 
-      const response = await v2Instance({
-        url: `/${broadcastId}/downloads`,
-        method: 'GET'
-      });
-
-      const { data: link } = response;
-      const [flv] = link;
-
-      if (flv && flv.status === DOWNLOAD_LINK_SUCCESS_STATUS) {
-        resolve(flv);
-      }
+        const { status, progress } = link;
+        if (status !== DOWNLOAD_LINK_SUCCESS_STATUS && progress !== 100) {
+          getDownloadLink(broadcastId);
+        }
+        resolve(link);
+        clearInterval(intervalID);
+      }, BAMBUSER_API_TIMEOUT);
     } catch (err) {
-      console.log('Error getting broadcast download link from bambuser: ', err);
+      console.log(
+        'Error getting broadcast download link status from bambuser: ',
+        err
+      );
       reject(err);
     }
   });
 };
 
-export const getMP4DownloadStatus = broadcastId => {
+const getMP4DownloadStatus = broadcastId => {
   return new Promise(async (resolve, reject) => {
     try {
       const v2Instance = axiosClient.getInstance(BAMBUSER_API_VERSION_TWO);
