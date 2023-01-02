@@ -324,13 +324,12 @@ export const saveCategoryRefToDB = async payload => {
   }
 };
 
-export const updateCategory = async payload => {
+export const updateCategory = async (categoryId, name) => {
   try {
     const { Category } = models;
-    const { categoryId } = payload;
     const filter = { categoryId };
     const options = { new: true };
-    const update = { ...payload };
+    const update = { name };
     const category = await Category.findOneAndUpdate(filter, update, options);
     return [null, category];
   } catch (err) {

@@ -34,8 +34,8 @@ router.post(
   CategoryController.createCategory
 );
 
-router.post(
-  '/video-service/updateCategory',
+router.put(
+  '/video-service/updateCategory/:categoryId',
   categoryUpdateValidation,
   validationHandler,
   CategoryController.updateCategory
