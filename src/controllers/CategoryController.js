@@ -13,6 +13,22 @@ exports.getCategories = async (req, res, next) => {
   }
 };
 
+exports.getCategory = async (req, res, next) => {
+  const { categoryId } = req.params;
+  try {
+    const [statusCode, response] = await CategoryService.getCategory(
+      categoryId
+    );
+    res.status(statusCode).send(response);
+  } catch (err) {
+    console.log(
+      `Error with getting category metadata by id: ${categoryId}: `,
+      err
+    );
+    next(err);
+  }
+};
+
 exports.createCategory = async (req, res, next) => {
   try {
     const { body } = req;
