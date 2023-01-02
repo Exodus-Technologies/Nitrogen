@@ -42,8 +42,12 @@ exports.createCategory = async (req, res, next) => {
 
 exports.updateCategory = async (req, res, next) => {
   try {
-    const { body } = req;
-    const [statusCode, response] = await CategoryService.updateCategory(body);
+    const { categoryId } = req.params;
+    const { name } = req.body;
+    const [statusCode, response] = await CategoryService.updateCategory(
+      categoryId,
+      name
+    );
     res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with updating category: `, err);

@@ -89,8 +89,8 @@ const broadCastIdParamValidation = [
 ];
 
 const categoryUpdateValidation = [
-  body('categoryId')
-    .isNumeric()
+  param('categoryId')
+    .isString()
     .withMessage('Must provide a existing category id.'),
   body('name')
     .isString()
