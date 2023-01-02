@@ -288,6 +288,16 @@ export const getCategories = async query => {
   }
 };
 
+export const getCategoryById = async categoryId => {
+  try {
+    const { Category } = models;
+    const category = await Category.findOne({ categoryId });
+    return category;
+  } catch (err) {
+    console.log('Error getting catgeory data from db by id: ', err);
+  }
+};
+
 export const getCategoryByName = async name => {
   try {
     const { Category } = models;

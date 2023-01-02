@@ -4,7 +4,8 @@ import {
   getCategories,
   saveCategoryRefToDB,
   deleteCategoryById,
-  updateCategory
+  updateCategory,
+  getCategoryById
 } from '../mongodb';
 import { badImplementationRequest, badRequest } from '../response-codes';
 
@@ -24,6 +25,23 @@ exports.getCategories = async query => {
   } catch (err) {
     console.log('Error getting categories: ', err);
     return badImplementationRequest('Error getting categories.');
+  }
+};
+
+exports.getCategory = async categoryId => {
+  try {
+    const category = await getCategoryById(categoryId);
+    if (category) {
+      return [
+        200,
+        { message: 'Category fetched from db with success', category }
+      ];
+    } else {
+      return badRequest(`No category found with id provided.`);
+    }
+  } catch (err) {
+    console.log('Error getting category by id ', err);
+    return badImplementationRequest('Error getting category by id.');
   }
 };
 

@@ -20,6 +20,13 @@ router.get(
   CategoryController.getCategories
 );
 
+router.get(
+  '/video-service/getCategory/:categoryId',
+  categoryIdParamValidation,
+  validationHandler,
+  CategoryController.getCategory
+);
+
 router.post(
   '/video-service/createCategory',
   categoryPostValidation,

@@ -53,6 +53,10 @@ const videoIdParamValidation = [
   param('videoId').isString().withMessage('Must provide a existing video id.')
 ];
 
+const categoryIdValidation = [
+  param('videoId').isString().withMessage('Must provide a existing video id.')
+];
+
 const categoryQueryValidation = [
   query('page')
     .isString()
