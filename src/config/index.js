@@ -16,7 +16,7 @@ const config = {
       s3VideoBucketName: process.env.S3_VIDEO_BUCKET_NAME
     },
     mongodb: {
-      clusterName: process.env.CLUSTER_NAME,
+      clusterDomain: process.env.CLUSTER_DOMAIN,
       dbName: process.env.DB_NAME,
       dbUser: process.env.DB_USER,
       dbPass: process.env.DB_PASS,
