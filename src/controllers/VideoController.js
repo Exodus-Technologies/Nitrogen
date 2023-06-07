@@ -14,10 +14,10 @@ exports.uploadVideo = async (req, res, next) => {
 };
 
 exports.getVideo = async (req, res, next) => {
+  const { videoId } = req.params;
   try {
-    const { videoId } = req.params;
-    const [statusCode, payload] = await VideoService.getVideo(videoId);
-    res.status(statusCode).send(payload);
+    const [statusCode, response] = await VideoService.getVideo(videoId);
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with getting video by id: ${videoId}: `, err);
     next(err);
@@ -27,8 +27,8 @@ exports.getVideo = async (req, res, next) => {
 exports.getVideos = async (req, res, next) => {
   try {
     const { query } = req;
-    const [statusCode, payload] = await VideoService.getVideos(query);
-    res.status(statusCode).send(payload);
+    const [statusCode, response] = await VideoService.getVideos(query);
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with getting vidoes: `, err);
     next(err);
@@ -38,8 +38,8 @@ exports.getVideos = async (req, res, next) => {
 exports.updateViews = async (req, res, next) => {
   try {
     const { videoId } = req.body;
-    const [statusCode, payload] = await VideoService.updateViews(videoId);
-    res.status(statusCode).send(payload);
+    const [statusCode, response] = await VideoService.updateViews(videoId);
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with updating views for issue: `, err);
     next(err);
@@ -60,8 +60,8 @@ exports.updateVideo = async (req, res, next) => {
 exports.deleteVideoById = async (req, res, next) => {
   try {
     const { videoId } = req.params;
-    const [statusCode] = await VideoService.deleteVideoById(videoId);
-    res.status(statusCode).end();
+    const [statusCode, response] = await VideoService.deleteVideoById(videoId);
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with deleting video by id: ${videoId}: `, err);
     next(err);

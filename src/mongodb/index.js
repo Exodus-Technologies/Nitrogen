@@ -3,7 +3,6 @@
 import config from '../config';
 import models from '../models';
 import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
-import { createMoment } from '../utilities';
 
 const { dbUser, dbPass, clusterDomain, dbName } = config.sources.mongodb;
 
@@ -62,17 +61,10 @@ export const getVideos = async query => {
       .exec();
     const total = await Video.find(objectFilter, queryOps).count();
     return videos.map(video => {
-      const isPaid =
-        subscriptions && subscriptions.length
-          ? createMoment(video.createdAt).isBefore(
-              createMoment(subscriptions[0].endDate)
-            )
-          : false;
       return {
         ...video,
         total,
-        pages: Math.ceil(total / limit),
-        myVideo: video.avaiableForSale && isPaid ? true : false
+        pages: Math.ceil(total / limit)
       };
     });
   } catch (err) {
@@ -224,7 +216,7 @@ export const getBroadcastById = async eventId => {
   }
 };
 
-export const saveBroadcastToDb = async payload => {
+export const createBroadcast = async payload => {
   try {
     const { Broadcast } = models;
     const { collection } = payload;
@@ -240,7 +232,7 @@ export const saveBroadcastToDb = async payload => {
   }
 };
 
-export const updateBroadcastInDB = async (broadcastId, livestream) => {
+export const updateBroadcast = async (broadcastId, livestream) => {
   try {
     const { Broadcast } = models;
     const { collection, payload } = livestream;
@@ -308,12 +300,12 @@ export const getCategoryByName = async name => {
   }
 };
 
-export const saveCategoryRefToDB = async payload => {
+export const createCategory = async payload => {
   try {
     const { Category } = models;
     const category = await Category.findOne({ name: payload.name });
     if (category) {
-      return [Error('category with name already exists.')];
+      return [Error('category with name already exists.'), null];
     }
     const cat = new Category(payload);
     const createdCategory = await cat.save();

@@ -24,7 +24,7 @@ const videoSchema = new Schema(
     author: { type: String, default: AUTHOR },
     key: { type: String, required: true },
     thumbnail: { type: String },
-    isAvailableForSale: { type: Boolean },
+    isAvailableForSale: { type: Boolean, default: false },
     duration: { type: String },
     status: { type: String, default: VIDEO_PUBLISHED_STATUS },
     categories: { type: [String] }

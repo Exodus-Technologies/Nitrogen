@@ -36,12 +36,11 @@ exports.getBroadcasts = async query => {
 
 exports.deleteBroadcast = async broadcastId => {
   try {
-    const deletedBroadcast = await deleteBroadcast(broadcastId);
+    const [error, deletedBroadcast] = await deleteBroadcast(broadcastId);
     if (deletedBroadcast) {
       return [204];
-    } else {
-      return badRequest(`No broadcast to delete by ID provided.`);
     }
+    return badRequest(error.message);
   } catch (err) {
     console.log('Error deleting broadcast: ', err);
     return badImplementationRequest('Error deleting broadcast.');

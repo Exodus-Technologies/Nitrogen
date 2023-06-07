@@ -56,10 +56,12 @@ exports.updateCategory = async (req, res, next) => {
 };
 
 exports.deleteCategoryById = async (req, res, next) => {
+  const { categoryId } = req.params;
   try {
-    const { categoryId } = req.params;
-    const [statusCode] = await CategoryService.deleteCategoryById(categoryId);
-    res.status(statusCode).end();
+    const [statusCode, response] = await CategoryService.deleteCategoryById(
+      categoryId
+    );
+    res.status(statusCode).send(response);
   } catch (err) {
     console.log(`Error with deleting category by id: ${categoryId}: `, err);
     next(err);
