@@ -2,7 +2,7 @@
 
 import {
   getCategories,
-  saveCategoryRefToDB,
+  createCategory,
   deleteCategoryById,
   updateCategory,
   getCategoryById
@@ -47,7 +47,7 @@ exports.getCategory = async categoryId => {
 
 exports.createCategory = async payload => {
   try {
-    const [error, category] = await saveCategoryRefToDB(payload);
+    const [error, category] = await createCategory(payload);
     if (category) {
       return [200, { message: 'Category created with success.', category }];
     } else {
@@ -75,11 +75,11 @@ exports.updateCategory = async (categoryId, name) => {
 
 exports.deleteCategoryById = async categoryId => {
   try {
-    const deletedCategory = await deleteCategoryById(categoryId);
+    const [error, deletedCategory] = await deleteCategoryById(categoryId);
     if (deletedCategory) {
       return [204];
     }
-    return badRequest(`No category found with id provided.`);
+    return badRequest(error.message);
   } catch (err) {
     console.log('Error deleting category by id: ', err);
     return badImplementationRequest('Error deleting category by id.');

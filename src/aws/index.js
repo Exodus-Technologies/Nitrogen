@@ -16,14 +16,15 @@ import {
 } from '../constants';
 import { getFileContentFromPath } from '../utilities';
 
-const { aws } = config.sources;
 const {
   accessKeyId,
   secretAccessKey,
+  region,
   s3VideoBucketName,
   s3ThumbnailBucketName,
-  region
-} = aws;
+  videoDistributionURI,
+  thumbnailDistributionURI
+} = config.sources.aws;
 
 // Create S3 service object
 const s3Client = new S3Client({
@@ -120,7 +121,7 @@ export const doesThumbnailS3BucketExist = () => {
   });
 };
 
-export const doesS3ObjectExist = key => {
+export const doesVideoObjectExist = key => {
   return new Promise(async (resolve, reject) => {
     try {
       const params = {
@@ -132,7 +133,7 @@ export const doesS3ObjectExist = key => {
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({
-        message: 'doesS3ObjectExist',
+        message: 'doesVideoObjectExist',
         requestId,
         cfId,
         extendedRequestId
@@ -210,12 +211,12 @@ export const copyThumbnailObject = (oldKey, newKey) => {
   });
 };
 
-export const getVideoURLFromS3 = fileName => {
-  return `https://${s3VideoBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
+export const getVideoDistributionURI = fileName => {
+  return `${videoDistributionURI}/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
 };
 
-export const getThumbnailURLFromS3 = fileName => {
-  return `https://${s3ThumbnailBucketName}.s3.amazonaws.com/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
+export const getThumbnailDistributionURI = fileName => {
+  return `${thumbnailDistributionURI}/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
 };
 
 export const deleteVideoByKey = key => {
@@ -268,8 +269,7 @@ export const uploadVideoToS3 = (fileContent, key) => {
     const params = {
       Bucket: s3VideoBucketName,
       Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`, // File name you want to save as in S3
-      Body: fileContent,
-      ACL: 'public-read'
+      Body: fileContent
     };
 
     try {
@@ -310,9 +310,9 @@ export const uploadThumbnailToS3 = (fileContent, key) => {
     const params = {
       Bucket: s3ThumbnailBucketName,
       Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`, // File name you want to save as in S3
-      Body: fileContent,
-      ACL: 'public-read'
+      Body: fileContent
     };
+
     try {
       const parallelUploads3 = new Upload({
         client: s3Client,
@@ -357,8 +357,8 @@ export const uploadArchiveToS3Location = async archive => {
       );
       await uploadVideoToS3(videoFile, key);
       await uploadThumbnailToS3(thumbnailFile, key);
-      const videoLocation = getVideoURLFromS3(key);
-      const thumbNailLocation = getThumbnailURLFromS3(key);
+      const videoLocation = getVideoDistributionURI(key);
+      const thumbNailLocation = getThumbnailDistributionURI(key);
       resolve({ thumbNailLocation, videoLocation, duration: videoDuration });
     } catch (err) {
       console.log(`Error uploading archives to s3 buckets`, err);

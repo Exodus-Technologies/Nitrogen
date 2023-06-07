@@ -3,20 +3,20 @@
 import config from '../config';
 import { badImplementationRequest, badRequest } from '../response-codes';
 import {
-  saveBroadcastToDb,
-  updateBroadcastInDB,
+  createBroadcast,
+  updateBroadcast,
   getActiveBroadcast,
   deleteBroadcast
 } from '../mongodb';
 import { deleteBroadCastById, uploadLivestream } from '../bambuser';
-import { BAMBUSER_BROADCAST_STATUS } from '../constants';
+import { BAMBUSER_BROADCAST_ARCHIVED_STATUS } from '../constants';
 
-const { platformKeys } = config.sources.bambuser;
+const { platforms } = config.sources.bambuser;
 
 exports.getApplicationId = async query => {
   try {
     const { platform } = query;
-    const applicationId = platformKeys[platform];
+    const applicationId = platforms[platform];
     if (applicationId) {
       return [
         200,
@@ -26,7 +26,7 @@ exports.getApplicationId = async query => {
         }
       ];
     }
-    return badRequest(`No application ids found with platform: '${platform}.'`);
+    return badRequest(`No application id found with platform: '${platform}.'`);
   } catch (err) {
     console.log('Error getting applicationId: ', err);
     return badImplementationRequest('Error getting applicationId.');
@@ -37,15 +37,15 @@ exports.webHookCallback = async payload => {
   try {
     const broadcast = await getActiveBroadcast();
     if (!broadcast) {
-      const savedBroadcast = await saveBroadcastToDb(payload);
+      const savedBroadcast = await createBroadcast(payload);
       if (savedBroadcast) {
         return [200];
       }
     }
     const { broadcastId } = broadcast;
-    const updatedBroadcast = await updateBroadcastInDB(broadcastId, payload);
+    const updatedBroadcast = await updateBroadcast(broadcastId, payload);
     if (updatedBroadcast) {
-      if (payload.type === BAMBUSER_BROADCAST_STATUS) {
+      if (payload.type === BAMBUSER_BROADCAST_ARCHIVED_STATUS) {
         const [error, livestream] = await uploadLivestream(broadcastId);
         if (livestream) {
           await deleteBroadCastById(broadcastId);

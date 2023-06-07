@@ -5,15 +5,15 @@ import {
   uploadArchiveToS3Location,
   doesVideoS3BucketExist,
   doesThumbnailS3BucketExist,
-  doesS3ObjectExist,
+  doesVideoObjectExist,
   deleteVideoByKey,
   copyVideoObject,
   copyThumbnailObject,
-  getVideoURLFromS3,
+  getVideoDistributionURI,
   deleteThumbnailByKey,
   createVideoS3Bucket,
   createThumbnailS3Bucket,
-  getThumbnailURLFromS3,
+  getThumbnailDistributionURI,
   doesThumbnailObjectExist
 } from '../aws';
 import {
@@ -273,8 +273,8 @@ exports.updateVideo = async archive => {
       if (newKey !== video.key) {
         await copyVideoObject(video.key, newKey);
         await copyThumbnailObject(video.key, newKey);
-        const s3Location = getVideoURLFromS3(newKey);
-        const s3ThumnailLocation = getThumbnailURLFromS3(newKey);
+        const s3Location = getVideoDistributionURI(newKey);
+        const s3ThumnailLocation = getThumbnailDistributionURI(newKey);
         const body = {
           title,
           videoId,
@@ -307,7 +307,7 @@ exports.updateVideo = async archive => {
         }
         const isVideoBucketAvaiable = await doesVideoS3BucketExist();
         if (isVideoBucketAvaiable) {
-          const s3Object = await doesS3ObjectExist(newKey);
+          const s3Object = await doesVideoObjectExist(newKey);
           if (s3Object) {
             await deleteVideoByKey(newKey);
           }
@@ -375,7 +375,7 @@ exports.updateVideo = async archive => {
           ];
         }
       } else {
-        const url = await getVideoURLFromS3(newKey);
+        const url = await getVideoDistributionURI(newKey);
         const body = {
           title,
           videoId,

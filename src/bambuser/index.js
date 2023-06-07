@@ -5,8 +5,8 @@ import config from '../config';
 import {
   uploadVideoToS3,
   uploadThumbnailToS3,
-  getVideoURLFromS3,
-  getThumbnailURLFromS3
+  getVideoDistributionURI,
+  getThumbnailDistributionURI
 } from '../aws';
 import { createVideo } from '../mongodb';
 import AxiosClient from '../utilities/client';
@@ -126,8 +126,8 @@ export const uploadLivestream = async broadcastId => {
     console.log('uploading thumbnail to s3....');
     await uploadThumbnailToS3(thumbnailFile, key);
 
-    const videoLocation = getVideoURLFromS3(key);
-    const thumbNailLocation = getThumbnailURLFromS3(key);
+    const videoLocation = getVideoDistributionURI(key);
+    const thumbNailLocation = getThumbnailDistributionURI(key);
 
     const body = {
       title: title || key,
@@ -145,10 +145,13 @@ export const uploadLivestream = async broadcastId => {
     if (video) {
       return [null, video];
     } else {
-      return [Error('Unable to save video metadata.')];
+      return [Error('Unable to save video metadata.'), null];
     }
   } catch (err) {
     console.log(`Error with moving livestream data to s3: `, err);
-    return [Error(`Unable to save video metadata: ${err.response.statusText}`)];
+    return [
+      Error(`Unable to save video metadata: ${err.response.statusText}`),
+      null
+    ];
   }
 };
