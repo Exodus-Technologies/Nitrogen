@@ -120,11 +120,19 @@ exports.uploadVideo = async archive => {
         'Must have file description associated with file upload.'
       );
     }
-    if (description && description.length > 255) {
+    if (description && description.length > 5000) {
       return badRequest(
-        'Description must be provided and less than 255 characters long.'
+        'Description must be provided and less than 5000 characters long.'
       );
     }
+    if (!categories) {
+      return badRequest('Video categories must be provided.');
+    }
+
+    if (categories && typeof categories !== 'string') {
+      return badRequest('Video categories if provided must be a string.');
+    }
+
     if (!videoPath) {
       return badRequest('Video must be provided to upload.');
     }
@@ -140,17 +148,18 @@ exports.uploadVideo = async archive => {
     }
     if (thumbnailPath && thumbnailType !== THUMBNAIL_MIME_TYPE) {
       return badRequest(
-        'Thumbnail must be a file with a image type extention.'
+        'Thumbnail must be a file with a image type extention like .jpg or .jpeg.'
       );
     }
     if (thumbnailPath && thumbnailSize <= 0) {
-      return badRequest('Thumbnail must be a file with content.');
+      return badRequest('Thumbnail must be a file with content inside.');
     }
 
     const video = await getVideoByTitle(title);
+
     if (video) {
       return badRequest(
-        `Video with the title ${title} provide already exists.`
+        `Video with the title ${title} provided already exists.`
       );
     } else {
       const isVideoBucketAvaiable = await doesVideoS3BucketExist();
@@ -179,7 +188,7 @@ exports.uploadVideo = async archive => {
         if (video) {
           return [200, { message: 'Video uploaded to s3 with success', video }];
         } else {
-          return badRequest('Unable to save video metadata.');
+          return badRequest('Unable to save video with metadata.');
         }
       }
     }
@@ -240,6 +249,7 @@ exports.updateViews = async videoId => {
 exports.updateVideo = async archive => {
   try {
     const {
+      videoId,
       title,
       description,
       videoPath,
@@ -249,12 +259,11 @@ exports.updateVideo = async archive => {
       thumbnailType,
       thumbnailSize,
       categories,
-      videoId,
       status,
       isAvailableForSale
     } = archive;
     if (!videoId) {
-      return badRequest('Video id must be provided.');
+      return badRequest('Video identifier must be provided.');
     }
     if (description && description.length > 255) {
       return badRequest(
@@ -264,10 +273,11 @@ exports.updateVideo = async archive => {
     if (isAvailableForSale && typeof isAvailableForSale !== 'boolean') {
       return badRequest('isAvailableForSale flag must be a boolean.');
     }
-    if (!categories) {
-      return badRequest('Video categories must be provided.');
+    if (categories && typeof categories !== 'string') {
+      return badRequest('Video categories if provided must be a string.');
     }
     const video = await getVideoById(videoId);
+
     if (video) {
       const newKey = removeSpaces(title);
       if (newKey !== video.key) {
@@ -289,8 +299,8 @@ exports.updateVideo = async archive => {
           isAvailableForSale
         };
         await updateVideo(body);
-        await deleteVideoByKey(video.key);
-        await deleteThumbnailByKey(video.key);
+        deleteVideoByKey(video.key);
+        deleteThumbnailByKey(video.key);
         return [
           200,
           {
@@ -331,7 +341,7 @@ exports.updateVideo = async archive => {
           return [
             200,
             {
-              message: 'Video uploaded to s3 with success',
+              message: 'Video updated and uploaded to s3 with success',
               video: {
                 ...body
               }
@@ -367,7 +377,8 @@ exports.updateVideo = async archive => {
           return [
             200,
             {
-              message: 'Video uploaded to s3 with success',
+              message:
+                'Video thumbnail updated and uploaded to s3 with success',
               video: {
                 ...body
               }
@@ -376,6 +387,7 @@ exports.updateVideo = async archive => {
         }
       } else {
         const url = await getVideoDistributionURI(newKey);
+        const thumbnail = await getThumbnailDistributionURI(newKey);
         const body = {
           title,
           videoId,
@@ -385,6 +397,7 @@ exports.updateVideo = async archive => {
             categories: categories.split(',').map(item => item.trim())
           }),
           url,
+          thumbnail,
           status,
           isAvailableForSale
         };
@@ -400,7 +413,7 @@ exports.updateVideo = async archive => {
         ];
       }
     } else {
-      return badRequest(`No videoId was passed to update video.`);
+      return badRequest(`No video was found to update by videoId provided.`);
     }
   } catch (err) {
     console.log(`Error updating video metadata: `, err);

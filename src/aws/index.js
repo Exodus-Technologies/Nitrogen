@@ -296,7 +296,7 @@ export const uploadVideoToS3 = (fileContent, key) => {
         extendedRequestId
       });
       console.log(
-        `Error uploading file to s3 bucket: ${s3VideoBucketName} `,
+        `Error uploading video file to s3 bucket: ${s3VideoBucketName} `,
         err
       );
       reject(err);
@@ -337,7 +337,7 @@ export const uploadThumbnailToS3 = (fileContent, key) => {
         extendedRequestId
       });
       console.log(
-        `Error uploading file to s3 bucket: ${s3VideoBucketName} `,
+        `Error uploading thumbnail file to s3 bucket: ${s3VideoBucketName} `,
         err
       );
       reject(err);
