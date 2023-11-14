@@ -120,9 +120,9 @@ exports.uploadVideo = async archive => {
         'Must have file description associated with file upload.'
       );
     }
-    if (description && description.length > 255) {
+    if (description && description.length > 5000) {
       return badRequest(
-        'Description must be provided and less than 255 characters long.'
+        'Description must be provided and less than 5000 characters long.'
       );
     }
     if (!categories) {
