@@ -1,7 +1,7 @@
 {
   "name": "nitrogen",
   "version": "2.2.1",
-  "description": "Microservice for all interactions for bambuser integration which includes: uploading and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
+  "description": "Microservice for all interactions for video and supporting metadata transactions including: uploading and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

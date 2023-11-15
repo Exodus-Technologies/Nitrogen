@@ -13,6 +13,17 @@ exports.uploadVideo = async (req, res, next) => {
   }
 };
 
+exports.manualUpload = async (req, res, next) => {
+  try {
+    const { body } = req;
+    const [statusCode, payload] = await VideoService.manualUpload(body);
+    res.status(statusCode).send(payload);
+  } catch (err) {
+    console.log(`Error with manual uploading file to s3: `, err);
+    next(err);
+  }
+};
+
 exports.getVideo = async (req, res, next) => {
   const { videoId } = req.params;
   try {

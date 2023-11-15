@@ -88,6 +88,25 @@ const broadCastIdParamValidation = [
   param('broadcastId').isNumeric().withMessage('Must provide a broadcast id.')
 ];
 
+const manualUploadBodyValidation = [
+  body('title')
+    .isString()
+    .withMessage('Must provide a title for manual upload.'),
+  body('description')
+    .isString()
+    .withMessage('Must provide a description for manual upload.'),
+  body('categories')
+    .isString()
+    .withMessage('Must provide categories for manual upload.'),
+  body('duration')
+    .isString()
+    .withMessage('Must provide video duration for manual upload.'),
+  body('isAvailableForSale')
+    .isBoolean()
+    .optional()
+    .withMessage('Must provide a boolean value if the asset is for sale.')
+];
+
 const categoryUpdateValidation = [
   param('categoryId')
     .isString()
@@ -123,5 +142,6 @@ export {
   categoryIdParamValidation,
   broadCastIdBodyValidation,
   broadCastIdParamValidation,
-  broadcastQueryValidation
+  broadcastQueryValidation,
+  manualUploadBodyValidation
 };

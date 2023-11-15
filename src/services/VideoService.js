@@ -120,11 +120,6 @@ exports.uploadVideo = async archive => {
         'Must have file description associated with file upload.'
       );
     }
-    if (description && description.length > 5000) {
-      return badRequest(
-        'Description must be provided and less than 5000 characters long.'
-      );
-    }
     if (!categories) {
       return badRequest('Video categories must be provided.');
     }
@@ -198,6 +193,52 @@ exports.uploadVideo = async archive => {
   }
 };
 
+exports.manualUpload = async upload => {
+  try {
+    const { title, description, categories, duration, isAvailableForSale } =
+      upload;
+
+    const key = removeSpaces(title);
+
+    const s3VideoObject = await doesVideoObjectExist(key);
+    if (!s3VideoObject) {
+      return badRequest('Video file is not in s3 bucket. Try again later.');
+    }
+
+    const s3ThumbNailObject = await doesThumbnailObjectExist(key);
+    if (!s3ThumbNailObject) {
+      return badRequest('Thumbnail file is not in s3 bucket. Try again later.');
+    }
+
+    const body = {
+      title,
+      description,
+      key: removeSpaces(title),
+      ...(categories && {
+        categories: categories.split(',').map(item => item.trim())
+      }),
+      duration,
+      url: getVideoDistributionURI(key),
+      thumbnail: getThumbnailDistributionURI(key),
+      status: VIDEO_PUBLISHED_STATUS,
+      isAvailableForSale
+    };
+
+    const video = await createVideo(body);
+    if (video) {
+      return [
+        200,
+        { message: 'Video manual uploaded to s3 with success', video }
+      ];
+    } else {
+      return badRequest('Unable to save manual upload video with metadata.');
+    }
+  } catch (err) {
+    console.log(`Error manually uploading video to s3: `, err);
+    return badImplementationRequest('Error manually uploading video to s3.');
+  }
+};
+
 exports.getVideos = async query => {
   try {
     const videos = await getVideos(query);
@@ -264,11 +305,6 @@ exports.updateVideo = async archive => {
     } = archive;
     if (!videoId) {
       return badRequest('Video identifier must be provided.');
-    }
-    if (description && description.length > 255) {
-      return badRequest(
-        'Description must be provided and less than 255 characters long.'
-      );
     }
     if (isAvailableForSale && typeof isAvailableForSale !== 'boolean') {
       return badRequest('isAvailableForSale flag must be a boolean.');
