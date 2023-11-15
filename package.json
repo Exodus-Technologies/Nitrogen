@@ -1,6 +1,6 @@
 {
   "name": "nitrogen",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Microservice for all interactions for video and supporting metadata transactions including: uploading and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
   "main": "index.js",
   "scripts": {
