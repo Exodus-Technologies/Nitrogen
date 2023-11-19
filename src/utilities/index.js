@@ -2,7 +2,6 @@
 
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { getVideoDurationInSeconds } from 'get-video-duration';
 import { http, https } from 'follow-redirects';
 
 export const fancyTimeFormat = duration => {
@@ -23,22 +22,17 @@ export const fancyTimeFormat = duration => {
   return ret;
 };
 
-export const getFileContentFromPath = (path, isVideo = true) => {
+export const getThumbnailContentFromPath = path => {
   return new Promise((resolve, reject) => {
     try {
       fs.readFile(path, async (err, buffer) => {
-        const content = { file: buffer };
         if (err) {
           reject(err);
         }
-        if (isVideo) {
-          const duration = await getVideoDurationInSeconds(path);
-          content['duration'] = duration;
-        }
-        resolve(content);
+        resolve({ file: buffer });
       });
     } catch (err) {
-      console.log(`Error getting file: ${path} `, err);
+      console.log(`Error getting thumbnail file: ${path} `, err);
       reject(err);
     }
   });
