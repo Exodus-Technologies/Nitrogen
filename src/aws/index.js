@@ -34,7 +34,8 @@ const s3Client = new S3Client({
     accessKeyId,
     secretAccessKey,
     region
-  }
+  },
+  useAccelerateEndpoint: true
 });
 
 export const createVideoS3Bucket = () => {
@@ -222,13 +223,13 @@ export const getThumbnailDistributionURI = fileName => {
 };
 
 export const deleteVideoByKey = key => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const params = {
         Bucket: s3VideoBucketName,
         Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`
       };
-      await s3Client.send(new DeleteObjectCommand(params));
+      s3Client.send(new DeleteObjectCommand(params));
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
@@ -244,13 +245,13 @@ export const deleteVideoByKey = key => {
 };
 
 export const deleteThumbnailByKey = key => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const params = {
         Bucket: s3ThumbnailBucketName,
         Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
       };
-      await s3Client.send(new DeleteObjectCommand(params));
+      s3Client.send(new DeleteObjectCommand(params));
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;

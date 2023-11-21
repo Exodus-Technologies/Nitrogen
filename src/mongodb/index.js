@@ -158,12 +158,10 @@ export const updateVideo = async payload => {
 export const updateVideoViews = async videoId => {
   try {
     const { Video } = models;
-    const video = await Video.findOne({ videoId });
-    if (video) {
-      video.totalViews += 1;
-      await video.save();
-      return video;
-    }
+    return await Video.findOneAndUpdate(
+      { videoId },
+      { $inc: { videoViews: 1 } }
+    );
   } catch (err) {
     console.log('Error updating video views: ', err);
   }
