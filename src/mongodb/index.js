@@ -2,7 +2,6 @@
 
 import config from '../config';
 import models from '../models';
-import { DEFAULT_SUBSCRIPTION_TYPE } from '../constants';
 
 const { dbUser, dbPass, clusterDomain, dbName } = config.sources.mongodb;
 
@@ -14,26 +13,10 @@ const queryOps = { __v: 0, _id: 0 };
 
 export const getVideos = async query => {
   try {
-    const { Video, Subscription } = models;
+    const { Video } = models;
     const page = parseInt(query.page);
     const limit = parseInt(query.limit);
-    const userId = parseInt(query.userId);
     const skipIndex = (page - 1) * limit;
-    const subscriptions = userId
-      ? await Subscription.find({ userId, type: DEFAULT_SUBSCRIPTION_TYPE })
-          .sort({
-            endDate: 'desc'
-          })
-          .limit(1)
-      : null;
-    const q = {
-      ...query,
-      ...(query.categories && {
-        categories: {
-          $in: [...query.categories.split(',').map(item => item.trim())]
-        }
-      })
-    };
 
     const filter = [];
     for (const [key, value] of Object.entries(query)) {
@@ -175,12 +158,10 @@ export const updateVideo = async payload => {
 export const updateVideoViews = async videoId => {
   try {
     const { Video } = models;
-    const video = await Video.findOne({ videoId });
-    if (video) {
-      video.totalViews += 1;
-      await video.save();
-      return video;
-    }
+    return await Video.findOneAndUpdate(
+      { videoId },
+      { $inc: { videoViews: 1 } }
+    );
   } catch (err) {
     console.log('Error updating video views: ', err);
   }

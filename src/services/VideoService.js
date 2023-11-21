@@ -19,8 +19,7 @@ import {
 import {
   VIDEO_MIME_TYPE,
   THUMBNAIL_MIME_TYPE,
-  MAX_FILE_SIZE,
-  VIDEO_PUBLISHED_STATUS
+  MAX_FILE_SIZE
 } from '../constants';
 import {
   createVideo,
@@ -36,7 +35,12 @@ import { badImplementationRequest, badRequest } from '../response-codes';
 import { fancyTimeFormat } from '../utilities';
 
 function isEmpty(obj) {
-  return Object.keys(obj).length === 0;
+  for (const prop in obj) {
+    if (obj.hasOwnProperty(prop)) return false;
+  }
+  return (
+    JSON.stringify(obj) === JSON.stringify({}) || Object.keys(obj).length === 0
+  );
 }
 
 function removeSpaces(str) {
@@ -61,7 +65,7 @@ exports.getPayloadFromRequest = async req => {
       if (isEmpty(fields)) reject('Form is empty.');
       const file = {
         ...fields,
-        isAvailableForSale: convertCheckBoxValue(fields['isAvailableForSale']),
+        isAvailableForSale: convertCheckBoxValue(fields.isAvailableForSale),
         key: removeSpaces(fields.title)
       };
       if (!isEmpty(files)) {
@@ -120,11 +124,6 @@ exports.uploadVideo = async archive => {
         'Must have file description associated with file upload.'
       );
     }
-    if (description && description.length > 5000) {
-      return badRequest(
-        'Description must be provided and less than 5000 characters long.'
-      );
-    }
     if (!categories) {
       return badRequest('Video categories must be provided.');
     }
@@ -170,6 +169,7 @@ exports.uploadVideo = async archive => {
       } else {
         const { thumbNailLocation, videoLocation, duration } =
           await uploadArchiveToS3Location(archive);
+
         const body = {
           title,
           description,
@@ -180,7 +180,6 @@ exports.uploadVideo = async archive => {
           duration: fancyTimeFormat(duration),
           url: videoLocation,
           thumbnail: thumbNailLocation,
-          status: VIDEO_PUBLISHED_STATUS,
           isAvailableForSale
         };
 
@@ -195,6 +194,51 @@ exports.uploadVideo = async archive => {
   } catch (err) {
     console.log(`Error uploading video to s3: `, err);
     return badImplementationRequest('Error uploading video to s3.');
+  }
+};
+
+exports.manualUpload = async upload => {
+  try {
+    const { title, description, categories, duration, isAvailableForSale } =
+      upload;
+
+    const key = removeSpaces(title);
+
+    const s3VideoObject = await doesVideoObjectExist(key);
+    if (!s3VideoObject) {
+      return badRequest('Video file is not in s3 bucket. Try again later.');
+    }
+
+    const s3ThumbNailObject = await doesThumbnailObjectExist(key);
+    if (!s3ThumbNailObject) {
+      return badRequest('Thumbnail file is not in s3 bucket. Try again later.');
+    }
+
+    const body = {
+      title,
+      description,
+      key: removeSpaces(title),
+      ...(categories && {
+        categories: categories.split(',').map(item => item.trim())
+      }),
+      duration,
+      url: getVideoDistributionURI(key),
+      thumbnail: getThumbnailDistributionURI(key),
+      isAvailableForSale
+    };
+
+    const video = await createVideo(body);
+    if (video) {
+      return [
+        200,
+        { message: 'Video manual uploaded to s3 with success', video }
+      ];
+    } else {
+      return badRequest('Unable to save manual upload video with metadata.');
+    }
+  } catch (err) {
+    console.log(`Error manually uploading video to s3: `, err);
+    return badImplementationRequest('Error manually uploading video to s3.');
   }
 };
 
@@ -264,11 +308,6 @@ exports.updateVideo = async archive => {
     } = archive;
     if (!videoId) {
       return badRequest('Video identifier must be provided.');
-    }
-    if (description && description.length > 255) {
-      return badRequest(
-        'Description must be provided and less than 255 characters long.'
-      );
     }
     if (isAvailableForSale && typeof isAvailableForSale !== 'boolean') {
       return badRequest('isAvailableForSale flag must be a boolean.');
@@ -442,19 +481,19 @@ exports.deleteVideoById = async videoId => {
 
 exports.getTotal = async query => {
   try {
-    const videos = await getTotal(query);
-    if (videos) {
+    const total = await getTotal(query);
+    if (total) {
       return [
         200,
         {
           message: 'Successful fetch for get total video with query params.',
-          total_issue: videos
+          videoCount: total
         }
       ];
     }
-    return badRequest(`No video found with selected query params.`);
+    return badRequest(`No video total found with selected query params.`);
   } catch (err) {
-    console.log('Error getting all videos: ', err);
-    return badImplementationRequest('Error getting videos.');
+    console.log('Error getting total for all videos: ', err);
+    return badImplementationRequest('Error getting total for all videos.');
   }
 };

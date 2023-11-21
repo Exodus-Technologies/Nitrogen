@@ -3,7 +3,8 @@ import { VideoController } from '../controllers';
 import {
   videoIdParamValidation,
   videoQueryValidation,
-  videoIdBodyUpdateValidation
+  videoIdBodyUpdateValidation,
+  manualUploadBodyValidation
 } from '../validations';
 import { validationHandler } from '../middlewares';
 
@@ -11,6 +12,12 @@ const { Router } = express;
 const router = Router();
 
 router.post('/video-service/uploadVideo', VideoController.uploadVideo);
+
+router.post(
+  '/video-service/manualUpload',
+  manualUploadBodyValidation,
+  VideoController.manualUpload
+);
 
 router.get('/video-service/getTotal', VideoController.getTotal);
 

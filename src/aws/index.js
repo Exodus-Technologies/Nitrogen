@@ -1,5 +1,6 @@
 'use strict';
 
+import fs from 'fs';
 import {
   S3Client,
   ListBucketsCommand,
@@ -9,12 +10,13 @@ import {
   CreateBucketCommand
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import { getVideoDurationInSeconds } from 'get-video-duration';
 import config from '../config';
 import {
   DEFAULT_THUMBNAIL_FILE_EXTENTION,
   DEFAULT_VIDEO_FILE_EXTENTION
 } from '../constants';
-import { getFileContentFromPath } from '../utilities';
+import { getThumbnailContentFromPath } from '../utilities';
 
 const {
   accessKeyId,
@@ -32,7 +34,8 @@ const s3Client = new S3Client({
     accessKeyId,
     secretAccessKey,
     region
-  }
+  },
+  useAccelerateEndpoint: true
 });
 
 export const createVideoS3Bucket = () => {
@@ -220,13 +223,13 @@ export const getThumbnailDistributionURI = fileName => {
 };
 
 export const deleteVideoByKey = key => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const params = {
         Bucket: s3VideoBucketName,
         Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`
       };
-      await s3Client.send(new DeleteObjectCommand(params));
+      s3Client.send(new DeleteObjectCommand(params));
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
@@ -242,13 +245,13 @@ export const deleteVideoByKey = key => {
 };
 
 export const deleteThumbnailByKey = key => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const params = {
         Bucket: s3ThumbnailBucketName,
         Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
       };
-      await s3Client.send(new DeleteObjectCommand(params));
+      s3Client.send(new DeleteObjectCommand(params));
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
@@ -263,20 +266,19 @@ export const deleteThumbnailByKey = key => {
   });
 };
 
-export const uploadVideoToS3 = (fileContent, key) => {
+export const uploadVideoToS3 = (videoPath, key) => {
   return new Promise(async (resolve, reject) => {
-    // Setting up S3 upload parameters
-    const params = {
-      Bucket: s3VideoBucketName,
-      Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`, // File name you want to save as in S3
-      Body: fileContent
-    };
-
     try {
+      const params = {
+        Bucket: s3VideoBucketName,
+        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`, // File name you want to save as in S3
+        Body: fs.createReadStream(videoPath)
+      };
+
       const parallelUploads3 = new Upload({
         client: s3Client,
-        queueSize: 10, // optional concurrency configuration
-        partSize: '15MB', // optional size of each part
+        queueSize: 7, // optional concurrency configuration
+        partSize: '5MB', // optional size of each part
         leavePartsOnError: false, // optional manually handle dropped parts
         params
       });
@@ -288,6 +290,7 @@ export const uploadVideoToS3 = (fileContent, key) => {
       await parallelUploads3.done();
       resolve();
     } catch (err) {
+      console.log(err);
       const { requestId, cfId, extendedRequestId } = err.$metadata;
       console.log({
         message: 'uploadVideoToS3',
@@ -349,17 +352,13 @@ export const uploadArchiveToS3Location = async archive => {
   return new Promise(async (resolve, reject) => {
     try {
       const { videoPath, thumbnailPath, key } = archive;
-      const { file: videoFile, duration: videoDuration } =
-        await getFileContentFromPath(videoPath);
-      const { file: thumbnailFile } = await getFileContentFromPath(
-        thumbnailPath,
-        false
-      );
-      await uploadVideoToS3(videoFile, key);
+      const duration = await getVideoDurationInSeconds(videoPath);
+      const thumbnailFile = await getThumbnailContentFromPath(thumbnailPath);
+      await uploadVideoToS3(videoPath, key);
       await uploadThumbnailToS3(thumbnailFile, key);
       const videoLocation = getVideoDistributionURI(key);
       const thumbNailLocation = getThumbnailDistributionURI(key);
-      resolve({ thumbNailLocation, videoLocation, duration: videoDuration });
+      resolve({ thumbNailLocation, videoLocation, duration });
     } catch (err) {
       console.log(`Error uploading archives to s3 buckets`, err);
       reject(err);

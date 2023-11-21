@@ -1,8 +1,5 @@
 import express from 'express';
-import {
-  appIdQueryValidation,
-  broadCastIdBodyValidation
-} from '../validations';
+import { appIdQueryValidation } from '../validations';
 import { validationHandler, cache } from '../middlewares';
 import { BambuserController } from '../controllers';
 
