@@ -22,14 +22,18 @@ export const fancyTimeFormat = duration => {
   return ret;
 };
 
+export const createSubId = () => {
+  return `video-${uuidv4()}`;
+};
+
 export const getThumbnailContentFromPath = path => {
   return new Promise((resolve, reject) => {
     try {
-      fs.readFile(path, async (err, buffer) => {
+      fs.readFile(path, (err, buffer) => {
         if (err) {
           reject(err);
         }
-        resolve({ file: buffer });
+        resolve(buffer);
       });
     } catch (err) {
       console.log(`Error getting thumbnail file: ${path} `, err);
@@ -98,8 +102,4 @@ export const getVideoContentFromURL = url => {
         reject(err);
       });
   });
-};
-
-export const createSubId = () => {
-  return `video-${uuidv4()}`;
 };

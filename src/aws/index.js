@@ -7,19 +7,16 @@ import {
   HeadObjectCommand,
   DeleteObjectCommand,
   CopyObjectCommand,
-  CreateBucketCommand,
-  CompleteMultipartUploadCommand,
-  CreateMultipartUploadCommand,
-  UploadPartCommand
+  CreateBucketCommand
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import { getVideoDurationInSeconds } from 'get-video-duration';
 import config from '../config';
 import {
   DEFAULT_THUMBNAIL_FILE_EXTENTION,
   DEFAULT_VIDEO_FILE_EXTENTION
 } from '../constants';
 import { getThumbnailContentFromPath } from '../utilities';
-import { getVideoDurationInSeconds } from 'get-video-duration';
 
 const {
   accessKeyId,
@@ -268,24 +265,29 @@ export const deleteThumbnailByKey = key => {
   });
 };
 
-const upload = key => {};
-
 export const uploadVideoToS3 = (videoPath, key) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const readStream = fs.createReadStream(videoPath);
+      const params = {
+        Bucket: s3VideoBucketName,
+        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`, // File name you want to save as in S3
+        Body: fs.createReadStream(videoPath)
+      };
 
-      let counter = 0;
-      readStream
-        .on('data', data => {
-          counter += 1;
-          console.log(data);
-          console.log(counter);
-        })
-        .on('end', () => {
-          console.log('Done: parseFile');
-          resolve();
-        });
+      const parallelUploads3 = new Upload({
+        client: s3Client,
+        queueSize: 7, // optional concurrency configuration
+        partSize: '5MB', // optional size of each part
+        leavePartsOnError: false, // optional manually handle dropped parts
+        params
+      });
+
+      parallelUploads3.on('httpUploadProgress', progress => {
+        console.log(progress);
+      });
+
+      await parallelUploads3.done();
+      resolve();
     } catch (err) {
       console.log(err);
       const { requestId, cfId, extendedRequestId } = err.$metadata;
@@ -349,15 +351,13 @@ export const uploadArchiveToS3Location = async archive => {
   return new Promise(async (resolve, reject) => {
     try {
       const { videoPath, thumbnailPath, key } = archive;
-      const videoDuration = getVideoDurationInSeconds(videoPath);
-      const { file: thumbnailFile } = await getThumbnailContentFromPath(
-        thumbnailPath
-      );
+      const duration = await getVideoDurationInSeconds(videoPath);
+      const thumbnailFile = await getThumbnailContentFromPath(thumbnailPath);
       await uploadVideoToS3(videoPath, key);
       await uploadThumbnailToS3(thumbnailFile, key);
       const videoLocation = getVideoDistributionURI(key);
       const thumbNailLocation = getThumbnailDistributionURI(key);
-      resolve({ thumbNailLocation, videoLocation, duration: videoDuration });
+      resolve({ thumbNailLocation, videoLocation, duration });
     } catch (err) {
       console.log(`Error uploading archives to s3 buckets`, err);
       reject(err);

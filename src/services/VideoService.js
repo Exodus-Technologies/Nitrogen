@@ -19,8 +19,7 @@ import {
 import {
   VIDEO_MIME_TYPE,
   THUMBNAIL_MIME_TYPE,
-  MAX_FILE_SIZE,
-  VIDEO_PUBLISHED_STATUS
+  MAX_FILE_SIZE
 } from '../constants';
 import {
   createVideo,
@@ -36,7 +35,12 @@ import { badImplementationRequest, badRequest } from '../response-codes';
 import { fancyTimeFormat } from '../utilities';
 
 function isEmpty(obj) {
-  return Object.keys(obj).length === 0;
+  for (const prop in obj) {
+    if (obj.hasOwnProperty(prop)) return false;
+  }
+  return (
+    JSON.stringify(obj) === JSON.stringify({}) || Object.keys(obj).length === 0
+  );
 }
 
 function removeSpaces(str) {
@@ -61,7 +65,7 @@ exports.getPayloadFromRequest = async req => {
       if (isEmpty(fields)) reject('Form is empty.');
       const file = {
         ...fields,
-        isAvailableForSale: convertCheckBoxValue(fields['isAvailableForSale']),
+        isAvailableForSale: convertCheckBoxValue(fields.isAvailableForSale),
         key: removeSpaces(fields.title)
       };
       if (!isEmpty(files)) {
@@ -165,6 +169,7 @@ exports.uploadVideo = async archive => {
       } else {
         const { thumbNailLocation, videoLocation, duration } =
           await uploadArchiveToS3Location(archive);
+
         const body = {
           title,
           description,
@@ -175,7 +180,6 @@ exports.uploadVideo = async archive => {
           duration: fancyTimeFormat(duration),
           url: videoLocation,
           thumbnail: thumbNailLocation,
-          status: VIDEO_PUBLISHED_STATUS,
           isAvailableForSale
         };
 
@@ -220,7 +224,6 @@ exports.manualUpload = async upload => {
       duration,
       url: getVideoDistributionURI(key),
       thumbnail: getThumbnailDistributionURI(key),
-      status: VIDEO_PUBLISHED_STATUS,
       isAvailableForSale
     };
 
@@ -478,19 +481,19 @@ exports.deleteVideoById = async videoId => {
 
 exports.getTotal = async query => {
   try {
-    const videos = await getTotal(query);
-    if (videos) {
+    const total = await getTotal(query);
+    if (total) {
       return [
         200,
         {
           message: 'Successful fetch for get total video with query params.',
-          total_issue: videos
+          videoCount: total
         }
       ];
     }
-    return badRequest(`No video found with selected query params.`);
+    return badRequest(`No video total found with selected query params.`);
   } catch (err) {
-    console.log('Error getting all videos: ', err);
-    return badImplementationRequest('Error getting videos.');
+    console.log('Error getting total for all videos: ', err);
+    return badImplementationRequest('Error getting total for all videos.');
   }
 };

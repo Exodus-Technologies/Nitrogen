@@ -70,8 +70,8 @@ server.use(broadcastRouter);
 console.log('Loaded broadcast routes middleware.');
 
 //Bambuser middleware
-server.use(bambuserRouter);
-console.log('Loaded bambuser routes middleware.');
+// server.use(bambuserRouter);
+// console.log('Loaded bambuser routes middleware.');
 
 //Video category middleware
 server.use(categoryRouter);
