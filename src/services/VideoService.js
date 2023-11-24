@@ -465,8 +465,8 @@ exports.deleteVideoById = async videoId => {
     const video = await getVideoById(videoId);
     if (video) {
       const { key } = video;
-      await deleteVideoByKey(key);
-      await deleteThumbnailByKey(key);
+      deleteVideoByKey(key);
+      deleteThumbnailByKey(key);
       const deletedVideo = await deleteVideoById(videoId);
       if (deletedVideo) {
         return [204];

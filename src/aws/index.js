@@ -11,12 +11,12 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getVideoDurationInSeconds } from 'get-video-duration';
+import { getThumbnailContentFromPath } from '../utilities';
 import config from '../config';
 import {
   DEFAULT_THUMBNAIL_FILE_EXTENTION,
   DEFAULT_VIDEO_FILE_EXTENTION
 } from '../constants';
-import { getThumbnailContentFromPath } from '../utilities';
 
 const {
   accessKeyId,
@@ -34,9 +34,26 @@ const s3Client = new S3Client({
     accessKeyId,
     secretAccessKey,
     region
-  },
-  useAccelerateEndpoint: true
+  }
 });
+
+const getVideoObjectKey = key => {
+  return `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
+};
+
+const getThumbnailObjectKey = key => {
+  return `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
+};
+
+const createS3ParallelUpload = params => {
+  return new Upload({
+    client: s3Client,
+    queueSize: 7, // optional concurrency configuration
+    partSize: '5MB', // optional size of each part
+    leavePartsOnError: false, // optional manually handle dropped parts
+    params
+  });
+};
 
 export const createVideoS3Bucket = () => {
   return new Promise(async (resolve, reject) => {
@@ -58,6 +75,14 @@ export const createVideoS3Bucket = () => {
       reject(err);
     }
   });
+};
+
+export const getVideoDistributionURI = fileName => {
+  return `${videoDistributionURI}/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
+};
+
+export const getThumbnailDistributionURI = fileName => {
+  return `${thumbnailDistributionURI}/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
 };
 
 export const createThumbnailS3Bucket = () => {
@@ -129,7 +154,7 @@ export const doesVideoObjectExist = key => {
     try {
       const params = {
         Bucket: s3VideoBucketName,
-        Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`
+        Key: getVideoObjectKey(key)
       };
       const s3Object = await s3Client.send(new HeadObjectCommand(params));
       resolve(s3Object);
@@ -151,7 +176,7 @@ export const doesThumbnailObjectExist = key => {
     try {
       const params = {
         Bucket: s3ThumbnailBucketName,
-        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
+        Key: getThumbnailObjectKey(key)
       };
       const s3Object = await s3Client.send(new HeadObjectCommand(params));
       resolve(s3Object);
@@ -174,7 +199,7 @@ export const copyVideoObject = (oldKey, newKey) => {
       const params = {
         Bucket: s3VideoBucketName,
         CopySource: `${s3VideoBucketName}/${oldKey}.${DEFAULT_VIDEO_FILE_EXTENTION}`,
-        Key: `${newKey}.${DEFAULT_VIDEO_FILE_EXTENTION}`
+        Key: getVideoObjectKey(newKey)
       };
       await s3Client.send(new CopyObjectCommand(params));
       resolve();
@@ -197,7 +222,7 @@ export const copyThumbnailObject = (oldKey, newKey) => {
       const params = {
         Bucket: s3ThumbnailBucketName,
         CopySource: `${s3ThumbnailBucketName}/${oldKey}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`,
-        Key: `${newKey}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
+        Key: getThumbnailObjectKey(newKey)
       };
       await s3Client.send(new CopyObjectCommand(params));
       resolve();
@@ -214,20 +239,12 @@ export const copyThumbnailObject = (oldKey, newKey) => {
   });
 };
 
-export const getVideoDistributionURI = fileName => {
-  return `${videoDistributionURI}/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
-};
-
-export const getThumbnailDistributionURI = fileName => {
-  return `${thumbnailDistributionURI}/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
-};
-
 export const deleteVideoByKey = key => {
   return new Promise((resolve, reject) => {
     try {
       const params = {
         Bucket: s3VideoBucketName,
-        Key: `${key}.${DEFAULT_VIDEO_FILE_EXTENTION}`
+        Key: getVideoObjectKey(key)
       };
       s3Client.send(new DeleteObjectCommand(params));
       resolve();
@@ -249,7 +266,7 @@ export const deleteThumbnailByKey = key => {
     try {
       const params = {
         Bucket: s3ThumbnailBucketName,
-        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`
+        Key: getThumbnailObjectKey(key)
       };
       s3Client.send(new DeleteObjectCommand(params));
       resolve();
@@ -268,26 +285,20 @@ export const deleteThumbnailByKey = key => {
 
 export const uploadVideoToS3 = (videoPath, key) => {
   return new Promise(async (resolve, reject) => {
+    const params = {
+      Bucket: s3VideoBucketName,
+      Key: getVideoObjectKey(key), // File name you want to save as in S3
+      Body: fs.createReadStream(videoPath)
+    };
+
     try {
-      const params = {
-        Bucket: s3VideoBucketName,
-        Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`, // File name you want to save as in S3
-        Body: fs.createReadStream(videoPath)
-      };
+      const parallelUpload = createS3ParallelUpload(params);
 
-      const parallelUploads3 = new Upload({
-        client: s3Client,
-        queueSize: 7, // optional concurrency configuration
-        partSize: '5MB', // optional size of each part
-        leavePartsOnError: false, // optional manually handle dropped parts
-        params
-      });
-
-      parallelUploads3.on('httpUploadProgress', progress => {
+      parallelUpload.on('httpUploadProgress', progress => {
         console.log(progress);
       });
 
-      await parallelUploads3.done();
+      await parallelUpload.done();
       resolve();
     } catch (err) {
       console.log(err);
@@ -309,27 +320,20 @@ export const uploadVideoToS3 = (videoPath, key) => {
 
 export const uploadThumbnailToS3 = (fileContent, key) => {
   return new Promise(async (resolve, reject) => {
-    // Setting up S3 upload parameters
     const params = {
       Bucket: s3ThumbnailBucketName,
-      Key: `${key}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`, // File name you want to save as in S3
+      Key: getThumbnailObjectKey(key), // File name you want to save as in S3
       Body: fileContent
     };
 
     try {
-      const parallelUploads3 = new Upload({
-        client: s3Client,
-        queueSize: 7, // optional concurrency configuration
-        partSize: '5MB', // optional size of each part
-        leavePartsOnError: false, // optional manually handle dropped parts
-        params
-      });
+      const parallelUpload = createS3ParallelUpload(params);
 
-      parallelUploads3.on('httpUploadProgress', progress => {
+      parallelUpload.on('httpUploadProgress', progress => {
         console.log(progress);
       });
 
-      await parallelUploads3.done();
+      await parallelUpload.done();
       resolve();
     } catch (err) {
       const { requestId, cfId, extendedRequestId } = err.$metadata;
