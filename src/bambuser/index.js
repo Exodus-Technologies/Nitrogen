@@ -9,7 +9,7 @@ import {
   getThumbnailDistributionURI
 } from '../aws';
 import { createVideo } from '../mongodb';
-import AxiosClient from '../utilities/client';
+import AxiosClient from '../utilities/axios';
 import {
   fancyTimeFormat,
   getContentFromURL,
