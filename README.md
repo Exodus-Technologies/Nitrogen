@@ -65,6 +65,8 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - AWS_ACCESS_KEY_ID (AWS access key)
 - AWS_SECRET_ACCESS_KEY (AWS secret access key)
 - AWS_REGION (AWS region)
+- AWS_CLOUDFRONT_VIDEOS_DISTRIBUTION_URI (CDN for videos)
+- AWS_CLOUDFRONT_THUMBNAILS_DISTRIBUTION_URI (CDN for thumbnails)
 - S3_VIDEO_BUCKET_NAME (bucket name for videos)
 - S3_THUMBNAIL_BUCKET_NAME (bucket for thumbnails)
 - BAMBUSER_APP_KEY_IOS (bambuser appkey for ios devices)
@@ -73,6 +75,7 @@ Nitrogen utilizes dotenv[https://github.com/motdotla/dotenv] for environment var
 - BAMBUSER_API_KEY (bambuser api key)
 - BAMBUSER_DAID (bambuser daid)
 - BAMBUSER_DASECRET (bambuser dasecret)
+- BAMBUSER_BROADCAST_URL (URI for bambuser broadcasts)
 
 # Running the project (development mode)
 
@@ -91,9 +94,8 @@ See `package.json` for description of task.
 
 Nitrogen utilizes various services provides by AWS:
 
-- Route 53 (DNS)
 - EC2 (Load balancer, Target Groups, Security groups)
 - ECR (Docker container registry)
 - ECS (Container Services that handles autoscaling and destination of "tasks")
 
-See [host](http://livestream.exodustechnologies.com/video-service/probeCheck) for more details and a test drive...
+See [host](http://videolb-1657778785.us-east-1.elb.amazonaws.com/video-service/probeCheck) for more details and a test drive...
