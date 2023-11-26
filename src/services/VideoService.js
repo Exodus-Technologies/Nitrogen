@@ -129,7 +129,9 @@ exports.uploadVideo = async archive => {
     }
 
     if (categories && typeof categories !== 'string') {
-      return badRequest('Video categories if provided must be a string.');
+      return badRequest(
+        'Video categories if provided must be a comma seperated string.'
+      );
     }
 
     if (!videoPath) {
@@ -157,9 +159,7 @@ exports.uploadVideo = async archive => {
     const video = await getVideoByTitle(title);
 
     if (video) {
-      return badRequest(
-        `Video with the title ${title} provided already exists.`
-      );
+      return badRequest(`Please provide another title for the video.`);
     } else {
       const isVideoBucketAvaiable = await doesVideoS3BucketExist();
       const isThumbnailBucketAvaiable = await doesThumbnailS3BucketExist();
@@ -313,7 +313,9 @@ exports.updateVideo = async archive => {
       return badRequest('isAvailableForSale flag must be a boolean.');
     }
     if (categories && typeof categories !== 'string') {
-      return badRequest('Video categories if provided must be a string.');
+      return badRequest(
+        'Video categories if provided must be a comma sperated string.'
+      );
     }
     const video = await getVideoById(videoId);
 
@@ -322,8 +324,6 @@ exports.updateVideo = async archive => {
       if (newKey !== video.key) {
         await copyVideoObject(video.key, newKey);
         await copyThumbnailObject(video.key, newKey);
-        const s3Location = getVideoDistributionURI(newKey);
-        const s3ThumnailLocation = getThumbnailDistributionURI(newKey);
         const body = {
           title,
           videoId,
@@ -332,8 +332,8 @@ exports.updateVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
-          url: s3Location,
-          thumbnail: s3ThumnailLocation,
+          url: getVideoDistributionURI(newKey),
+          thumbnail: getThumbnailDistributionURI(newKey),
           status,
           isAvailableForSale
         };
@@ -425,8 +425,6 @@ exports.updateVideo = async archive => {
           ];
         }
       } else {
-        const url = await getVideoDistributionURI(newKey);
-        const thumbnail = await getThumbnailDistributionURI(newKey);
         const body = {
           title,
           videoId,
@@ -435,8 +433,8 @@ exports.updateVideo = async archive => {
           ...(categories && {
             categories: categories.split(',').map(item => item.trim())
           }),
-          url,
-          thumbnail,
+          url: getVideoDistributionURI(newKey),
+          thumbnail: getThumbnailDistributionURI(newKey),
           status,
           isAvailableForSale
         };
@@ -465,8 +463,8 @@ exports.deleteVideoById = async videoId => {
     const video = await getVideoById(videoId);
     if (video) {
       const { key } = video;
-      await deleteVideoByKey(key);
-      await deleteThumbnailByKey(key);
+      deleteVideoByKey(key);
+      deleteThumbnailByKey(key);
       const deletedVideo = await deleteVideoById(videoId);
       if (deletedVideo) {
         return [204];

@@ -25,9 +25,8 @@ const startServer = async () => {
 const connectDB = async () => {
   const { options } = config.sources.mongodb;
   const { source } = models;
-  const uri = generateDBUri();
   try {
-    await source.connect(uri, options);
+    await source.connect(generateDBUri(), options);
   } catch (e) {
     console.log(`Error connecting to db: ${e}`);
     throw e;

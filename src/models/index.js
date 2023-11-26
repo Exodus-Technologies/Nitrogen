@@ -50,6 +50,11 @@ fs.readdirSync(__dirname)
     }
   });
 
+/**
+ * https://mongoosejs.com/docs/guide.html#strictQuery
+ */
+mongoose.set('strictQuery', true);
+
 models.source = mongoose;
 
 export default models;
