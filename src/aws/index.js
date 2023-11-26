@@ -77,12 +77,12 @@ export const createVideoS3Bucket = () => {
   });
 };
 
-export const getVideoDistributionURI = fileName => {
-  return `${videoDistributionURI}/${fileName}.${DEFAULT_VIDEO_FILE_EXTENTION}`;
+export const getVideoDistributionURI = key => {
+  return `${videoDistributionURI}/${getVideoObjectKey(key)}`;
 };
 
-export const getThumbnailDistributionURI = fileName => {
-  return `${thumbnailDistributionURI}/${fileName}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`;
+export const getThumbnailDistributionURI = key => {
+  return `${thumbnailDistributionURI}/${getThumbnailObjectKey(key)}`;
 };
 
 export const createThumbnailS3Bucket = () => {
@@ -198,7 +198,7 @@ export const copyVideoObject = (oldKey, newKey) => {
     try {
       const params = {
         Bucket: s3VideoBucketName,
-        CopySource: `${s3VideoBucketName}/${oldKey}.${DEFAULT_VIDEO_FILE_EXTENTION}`,
+        CopySource: `${s3VideoBucketName}/${getVideoObjectKey(oldKey)}`,
         Key: getVideoObjectKey(newKey)
       };
       await s3Client.send(new CopyObjectCommand(params));
@@ -221,7 +221,7 @@ export const copyThumbnailObject = (oldKey, newKey) => {
     try {
       const params = {
         Bucket: s3ThumbnailBucketName,
-        CopySource: `${s3ThumbnailBucketName}/${oldKey}.${DEFAULT_THUMBNAIL_FILE_EXTENTION}`,
+        CopySource: `${s3ThumbnailBucketName}/${getThumbnailObjectKey(oldKey)}`,
         Key: getThumbnailObjectKey(newKey)
       };
       await s3Client.send(new CopyObjectCommand(params));
