@@ -1,6 +1,6 @@
 {
   "name": "nitrogen",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "Microservice for all interactions for video and supporting metadata transactions including: uploading and moving archives to AWS S3 bucket and MongoDB (Video Manager)",
   "main": "index.js",
   "scripts": {
@@ -23,11 +23,13 @@
   },
   "homepage": "https://github.com/Exodus-Technologies/Nitrogen#readme",
   "dependencies": {
+    "@aws-sdk/abort-controller": "^3.374.0",
     "@aws-sdk/client-s3": "^3.53.1",
     "@aws-sdk/lib-storage": "^3.82.0",
     "@babel/core": "^7.17.2",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.0",
+    "@smithy/abort-controller": "^2.0.15",
     "axios": "^0.27.2",
     "compression": "^1.7.4",
     "core-js": "^3.21.0",
